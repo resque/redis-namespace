@@ -2,7 +2,7 @@ task :default => :spec
 task :test => :spec
 
 desc "Run specs"
-task :spec do 
+task :spec do
   exec "spec spec/redis_spec.rb"
 end
 
@@ -15,7 +15,7 @@ begin
     gemspec.email = "chris@ozmm.org"
     gemspec.homepage = "http://github.com/defunkt/redis-namespace"
     gemspec.authors = ["Chris Wanstrath"]
-    gemspec.version = '0.1.0'
+    gemspec.version = '0.1.1'
   end
 rescue LoadError
   puts "Jeweler not available. Install it with:"
