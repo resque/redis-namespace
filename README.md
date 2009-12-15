@@ -18,7 +18,7 @@ Useful when you have multiple systems using Redis differently in your app.
 Installation
 ============
 
-    $ gem install redis-namespace --source=http://gemcutter.org
+    $ gem install redis-namespace
 
 
 Author
