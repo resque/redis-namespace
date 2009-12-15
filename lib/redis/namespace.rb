@@ -74,7 +74,7 @@ class Redis
     # Ruby defines a now deprecated type method so we need to override it here
     # since it will never hit method_missing
     def type(key)
-      call_command(['type', key])
+      method_missing(:type, key)
     end
 
     def mapped_mget(*keys)

@@ -32,6 +32,7 @@ describe "redis" do
     @namespaced.incr('counter', 2)
     @namespaced['counter'].to_i.should == 2
     @redis['counter'].should == nil
+    @namespaced.type('counter').should == 'string'
   end
 
   it "should be able to use a namespace with mget" do
