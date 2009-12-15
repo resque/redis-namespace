@@ -19,6 +19,7 @@ describe "redis" do
   after(:all) do
     @r.quit
   end
+
   it "should be able to use a namespace" do
     r = Redis::Namespace.new(:ns, :redis => @r)
     r.flushdb
@@ -40,6 +41,6 @@ describe "redis" do
     r['foo'] = 1000
     r['bar'] = 2000
     r.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
-    r.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
+    r.mapped_mget('foo', 'baz', 'bar').should == {'foo'=>'1000', 'bar'=>'2000'}
   end
 end
