@@ -8,7 +8,10 @@ class Redis
     # $('.vt li a').map(function(){ return $(this).text().toLowerCase() }).sort()
     COMMANDS = [
       "auth",
+      "bgrewriteaof",
       "bgsave",
+      "blpop",
+      "brpop",
       "dbsize",
       "decr",
       "decrby",
@@ -35,11 +38,14 @@ class Redis
       "mget",
       "monitor",
       "move",
+      "mset",
+      "msetnx",
       "quit",
       "randomkey",
       "rename",
       "renamenx",
       "rpop",
+      "rpoplpush",
       "rpush",
       "sadd",
       "save",
@@ -57,11 +63,22 @@ class Redis
       "smembers",
       "smove",
       "sort",
+      "spop",
+      "srandmember",
       "srem",
       "sunion",
       "sunionstore",
       "ttl",
       "type",
+      "zadd",
+      "zcard",
+      "zincrby",
+      "zrange",
+      "zrangebyscore",
+      "zrem",
+      "zremrangebyscore",
+      "zrevrange",
+      "zscore",
       "[]",
       "[]="
     ]
@@ -91,12 +108,34 @@ class Redis
       call_command([:mget] + keys)
     end
 
+    def mset(keys)
+      call_mset(:mset, keys)
+    end
+
+    def msetnx(keys)
+      call_mset(:msetnx, keys)
+    end
+
     def method_missing(command, *args, &block)
       if COMMANDS.include?(command.to_s) && args[0]
         args[0] = "#{@namespace}:#{args[0]}"
       end
 
       @redis.send(command, *args, &block)
+    end
+
+
+    private
+
+
+    def call_mset(command, keys)
+      if @namespace
+        namespaced_keys = {}
+        keys.each { |key, value| namespaced_keys["#{@namespace}:#{key}"] = value }
+        keys = namespaced_keys
+      end
+
+      call_command([command] + [keys])
     end
   end
 end
