@@ -36,12 +36,22 @@ describe "redis" do
   end
 
   it "should be able to use a namespace with mget" do
-    r = Redis::Namespace.new(:ns, :redis => @redis)
-
     @namespaced['foo'] = 1000
     @namespaced['bar'] = 2000
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == {'foo'=>'1000', 'bar'=>'2000'}
+  end
+
+  it "should be able to use a namespace with mset" do
+    @namespaced.mset('foo' => '1000', 'bar' => '2000')
+    @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
+    @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
+  end
+
+  it "should be able to use a namespace with msetnx" do
+    @namespaced.msetnx('foo' => '1000', 'bar' => '2000')
+    @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
+    @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
   end
 
   it "can change its namespace" do
