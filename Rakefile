@@ -15,7 +15,7 @@ begin
     gemspec.email = "chris@ozmm.org"
     gemspec.homepage = "http://github.com/defunkt/redis-namespace"
     gemspec.authors = ["Chris Wanstrath"]
-    gemspec.version = '0.1.1'
+    gemspec.version = '0.2.0'
   end
 rescue LoadError
   puts "Jeweler not available. Install it with:"
