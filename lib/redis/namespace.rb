@@ -66,6 +66,8 @@ class Redis
       "[]="
     ]
 
+    attr_accessor :namespace
+
     def initialize(namespace, options = {})
       @namespace = namespace
       @redis = options[:redis]

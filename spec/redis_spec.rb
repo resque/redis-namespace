@@ -43,4 +43,18 @@ describe "redis" do
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == {'foo'=>'1000', 'bar'=>'2000'}
   end
+
+  it "can change its namespace" do
+    @namespaced['foo'].should == nil
+    @namespaced['foo'] = 'chris'
+    @namespaced['foo'].should == 'chris'
+
+    @namespaced.namespace.should == :ns
+    @namespaced.namespace = :spec
+    @namespaced.namespace.should == :spec
+
+    @namespaced['foo'].should == nil
+    @namespaced['foo'] = 'chris'
+    @namespaced['foo'].should == 'chris'
+  end
 end
