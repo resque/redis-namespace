@@ -5,7 +5,7 @@ class Redis
     # Generated from http://code.google.com/p/redis/wiki/CommandReference
     # using the following jQuery:
     #
-    # $('.vt li a').map(function(){ return $(this).text().toLowerCase() }).sort()
+    # $('.vt li a').map(function(i,e){return $(e).text().toLowerCase()}).sort().toArray()
     COMMANDS = [
       "auth",
       "bgrewriteaof",
