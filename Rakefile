@@ -15,7 +15,7 @@ begin
     gemspec.email = "chris@ozmm.org"
     gemspec.homepage = "http://github.com/defunkt/redis-namespace"
     gemspec.authors = ["Chris Wanstrath"]
-    gemspec.version = '0.2.0'
+    gemspec.version = '0.2.1'
     gemspec.add_dependency 'redis'
   end
 rescue LoadError
