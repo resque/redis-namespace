@@ -16,6 +16,7 @@ begin
     gemspec.homepage = "http://github.com/defunkt/redis-namespace"
     gemspec.authors = ["Chris Wanstrath"]
     gemspec.version = '0.2.0'
+    gemspec.add_dependency 'redis'
   end
 rescue LoadError
   puts "Jeweler not available. Install it with:"
