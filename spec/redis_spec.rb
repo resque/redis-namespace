@@ -35,6 +35,17 @@ describe "redis" do
     @namespaced.type('counter').should == 'string'
   end
 
+  it "should be able to use a namespace with del" do
+    @namespaced['foo'] = 1000
+    @namespaced['bar'] = 2000
+    @namespaced['baz'] = 3000
+    @namespaced.del 'foo'
+    @namespaced['foo'].should == nil
+    @namespaced.del 'bar', 'baz'
+    @namespaced['bar'].should == nil
+    @namespaced['baz'].should == nil
+  end
+
   it "should be able to use a namespace with mget" do
     @namespaced['foo'] = 1000
     @namespaced['bar'] = 2000

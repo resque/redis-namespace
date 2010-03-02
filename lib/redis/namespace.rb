@@ -96,6 +96,11 @@ class Redis
       method_missing(:type, key)
     end
 
+    def del(*keys)
+      keys = keys.map { |key| "#{@namespace}:#{key}"} if @namespace
+      call_command([:del] + keys)
+    end
+
     def mapped_mget(*keys)
       result = {}
       mget(*keys).each do |value|
