@@ -65,6 +65,33 @@ describe "redis" do
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
   end
 
+  it "should properly intersect three sets" do
+    @namespaced.sadd('foo', 1)
+    @namespaced.sadd('foo', 2)
+    @namespaced.sadd('foo', 3)
+    @namespaced.sadd('bar', 2)
+    @namespaced.sadd('bar', 3)
+    @namespaced.sadd('bar', 4)
+    @namespaced.sadd('baz', 3)
+    @namespaced.sinter('foo', 'bar', 'baz').should == %w( 3 )
+  end
+
+  it "should properly union two sets" do
+    @namespaced.sadd('foo', 1)
+    @namespaced.sadd('foo', 2)
+    @namespaced.sadd('bar', 2)
+    @namespaced.sadd('bar', 3)
+    @namespaced.sadd('bar', 4)
+    @namespaced.sunion('foo', 'bar').sort.should == %w( 1 2 3 4 )
+  end
+
+  it "should yield the correct list of keys" do
+    @namespaced["foo"] = 1
+    @namespaced["bar"] = 2
+    @namespaced["baz"] = 3
+    @namespaced.keys("*").sort.should == %w( bar baz foo )
+  end
+
   it "can change its namespace" do
     @namespaced['foo'].should == nil
     @namespaced['foo'] = 'chris'
