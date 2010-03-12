@@ -6,10 +6,10 @@ describe "redis" do
   before(:all) do
     # use database 15 for testing so we dont accidentally step on you real data
     @redis = Redis.new :db => 15
-    @namespaced = Redis::Namespace.new(:ns, :redis => @redis)
   end
 
   before(:each) do
+    @namespaced = Redis::Namespace.new(:ns, :redis => @redis)
     @namespaced.flushdb
     @redis['foo'] = 'bar'
   end
@@ -104,5 +104,32 @@ describe "redis" do
     @namespaced['foo'].should == nil
     @namespaced['foo'] = 'chris'
     @namespaced['foo'].should == 'chris'
+  end
+
+  it "should support command aliases (delete)" do 
+    @namespaced.delete('foo')
+    @redis.should_not have_key('ns:foo')
+  end
+
+  it "should support command aliases (set_add)" do 
+    @namespaced.set_add('bar', 'quux')
+    @namespaced.smembers('bar').should include('quux')
+  end
+
+  it "should support command aliases (push_head)" do 
+    @namespaced.push_head('bar', 'quux')
+    @redis.llen('ns:bar').should == 1
+  end
+
+  it "should support command aliases (zset_add)" do 
+    @namespaced.zset_add('bar', 1, 'quux')
+    @redis.zcard('ns:bar').should == 1
+  end
+
+
+  Spec::Matchers.define :have_key do |expected|
+    match do |redis|
+      redis.exists(expected)
+    end
   end
 end

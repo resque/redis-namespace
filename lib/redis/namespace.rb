@@ -87,6 +87,7 @@ class Redis
       "[]="              => [ :first,        :none    ]
     }
 
+
     attr_accessor :namespace
 
     def initialize(namespace, options = {})
@@ -101,7 +102,7 @@ class Redis
     end
 
     def method_missing(command, *args, &block)
-      (before, after) = COMMANDS[command.to_s]
+      (before, after) = COMMANDS[command.to_s] || COMMANDS[Redis::ALIASES[command.to_s]]
 
       # Add the namespace to any parameters that are keys.
       case before
