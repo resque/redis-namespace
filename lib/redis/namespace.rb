@@ -5,10 +5,39 @@ class Redis
     # The following table defines how input parameters and result
     # values should be modified for the namespace.
     #
-    # Generated from http://code.google.com/p/redis/wiki/CommandReference
-    # using the following jQuery:
+    # COMMANDS is a hash. Each key is the name of a command and each
+    # value is a two element array.
     #
-    # $('.vt li a').map(function(i,e){return $(e).text().toLowerCase()}).sort().toArray()
+    # The first element in the value array describes how to modify the
+    # arguments passed. It can be one of:
+    #
+    #   nil
+    #     Do nothing.
+    #   :first
+    #     Add the namespace to the first argument passed, e.g.
+    #       GET key => GET namespace:key
+    #   :all
+    #     Add the namespace to all arguments passed, e.g.
+    #       MGET key1 key2 => MGET namespace:key1 namespace:key2
+    #   :exclude_first
+    #     Add the namespace to all arguments but the first, e.g.
+    #   :exclude_last
+    #     Add the namespace to all arguments but the last, e.g.
+    #       BLPOP key1 key2 timeout =>
+    #       BLPOP namespace:key1 namespace:key2 timeout
+    #   :alternate
+    #     Add the namespace to every other argument, e.g.
+    #       MSET key1 value1 key2 value2 =>
+    #       MSET namespace:key1 value1 namespace:key2 value2
+    #
+    # The second element in the value array describes how to modify
+    # the return value of the Redis call. It can be one of:
+    #
+    #   nil
+    #     Do nothing.
+    #   :all
+    #     Add the namespace to all elements returned, e.g.
+    #       key1 key2 => namespace:key1 namespace:key2
     COMMANDS = {
       "auth"             => [ :none,         :none    ],
       "bgrewriteaof"     => [ :none,         :none    ],
@@ -102,7 +131,8 @@ class Redis
     end
 
     def method_missing(command, *args, &block)
-      (before, after) = COMMANDS[command.to_s] || COMMANDS[Redis::ALIASES[command.to_s]]
+      (before, after) = COMMANDS[command.to_s] ||
+        COMMANDS[Redis::ALIASES[command.to_s]]
 
       # Add the namespace to any parameters that are keys.
       case before
@@ -131,8 +161,7 @@ class Redis
       result
     end
 
-    private
-
+  private
     def add_namespace(key)
       return key unless key && @namespace
 
