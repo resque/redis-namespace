@@ -65,6 +65,15 @@ describe "redis" do
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
   end
 
+  it "should be able to use a namespace with hashes" do
+    @namespaced.hset('foo', 'key', 'value')
+    @namespaced.hset('foo', 'key1', 'value1')
+    @namespaced.hget('foo', 'key').should == 'value'
+    @namespaced.hgetall('foo').should == {'key' => 'value', 'key1' => 'value1'}
+    @namespaced.hlen('foo').should == 2
+    @namespaced.hkeys('foo').should == ['key', 'key1']
+  end
+
   it "should properly intersect three sets" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
