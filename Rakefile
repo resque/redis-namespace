@@ -1,6 +1,9 @@
 task :default => :spec
 task :test    => :spec
 
+desc "Build a gem"
+task :gem => [ :gemspec, :build ]
+
 desc "Run specs"
 task :spec do
   exec "spec spec/redis_spec.rb"
