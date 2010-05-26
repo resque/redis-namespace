@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = "redis-namespace"
-  s.version           = "0.4.4"
+  s.version           = "0.5.0"
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Namespaces Redis commands."
   s.homepage          = "http://github.com/defunkt/redis-namespace"
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.files            += Dir.glob("test/**/*")
   s.files            += Dir.glob("spec/**/*")
 
-  s.add_dependency    "redis", "~> 1.0.0"
+  s.add_dependency    "redis", "< 3.0.0"
 
   s.description = <<description
 Adds a Redis::Namespace class which can be used to namespace calls
