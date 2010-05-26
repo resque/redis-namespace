@@ -29,7 +29,7 @@ describe "redis" do
     @redis['foo'] = 'bob'
     @redis['foo'].should == 'bob'
 
-    @namespaced.incr('counter', 2)
+    @namespaced.incrby('counter', 2)
     @namespaced['counter'].to_i.should == 2
     @redis['counter'].should == nil
     @namespaced.type('counter').should == 'string'
@@ -54,13 +54,13 @@ describe "redis" do
   end
 
   it "should be able to use a namespace with mset" do
-    @namespaced.mset('foo' => '1000', 'bar' => '2000')
+    @namespaced.mset('foo', '1000', 'bar', '2000')
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
   end
 
   it "should be able to use a namespace with msetnx" do
-    @namespaced.msetnx('foo' => '1000', 'bar' => '2000')
+    @namespaced.msetnx('foo', '1000', 'bar', '2000')
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
   end
@@ -115,30 +115,26 @@ describe "redis" do
     @namespaced['foo'].should == 'chris'
   end
 
-  it "should support command aliases (delete)" do 
-    @namespaced.delete('foo')
-    @redis.should_not have_key('ns:foo')
-  end
+  # Only test aliasing functionality for Redis clients that support aliases.
+  unless Redis::Namespace::ALIASES.empty?
+    it "should support command aliases (delete)" do
+      @namespaced.delete('foo')
+      @redis.should_not have_key('ns:foo')
+    end
 
-  it "should support command aliases (set_add)" do 
-    @namespaced.set_add('bar', 'quux')
-    @namespaced.smembers('bar').should include('quux')
-  end
+    it "should support command aliases (set_add)" do
+      @namespaced.set_add('bar', 'quux')
+      @namespaced.smembers('bar').should include('quux')
+    end
 
-  it "should support command aliases (push_head)" do 
-    @namespaced.push_head('bar', 'quux')
-    @redis.llen('ns:bar').should == 1
-  end
+    it "should support command aliases (push_head)" do
+      @namespaced.push_head('bar', 'quux')
+      @redis.llen('ns:bar').should == 1
+    end
 
-  it "should support command aliases (zset_add)" do 
-    @namespaced.zset_add('bar', 1, 'quux')
-    @redis.zcard('ns:bar').should == 1
-  end
-
-
-  Spec::Matchers.define :have_key do |expected|
-    match do |redis|
-      redis.exists(expected)
+    it "should support command aliases (zset_add)" do
+      @namespaced.zset_add('bar', 1, 'quux')
+      @redis.zcard('ns:bar').should == 1
     end
   end
 end
