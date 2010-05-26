@@ -125,7 +125,11 @@ class Redis
     }
 
     # support previous versions of redis gem
-    ALIASES = (defined? Redis::Client) ? Redis::Client::ALIASES : Redis::ALIASES
+    ALIASES = case
+              when defined? Redis::Client::ALIASES  then Redis::Client::ALIASES
+              when defined? Redis::ALIASES          then Redis::ALIASES
+              else {}
+              end
 
     attr_accessor :namespace
 
@@ -159,7 +163,7 @@ class Redis
         args = add_namespace(args)
         args.push(last) if last
       when :alternate
-        args = [ add_namespace(Hash[*args]) ]
+        args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
       end
 
       # Dispatch the command to Redis and store the result.
