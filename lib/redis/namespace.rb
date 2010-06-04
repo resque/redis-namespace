@@ -144,6 +144,10 @@ class Redis
       method_missing(:type, key)
     end
 
+    def respond_to?(command)
+      @redis.respond_to?(command)
+    end
+
     def method_missing(command, *args, &block)
       (before, after) = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]
