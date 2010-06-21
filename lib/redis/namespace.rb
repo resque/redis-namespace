@@ -95,6 +95,7 @@ class Redis
       "sdiffstore"       => [ :all ],
       "select"           => [],
       "set"              => [ :first ],
+      "setex"            => [ :first ],
       "setnx"            => [ :first ],
       "shutdown"         => [],
       "sinter"           => [ :all ],
