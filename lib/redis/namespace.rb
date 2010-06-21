@@ -152,6 +152,10 @@ class Redis
       @redis.respond_to?(command)
     end
 
+    def keys(query = nil)
+      query.nil? ? super("*") : super
+    end
+
     def method_missing(command, *args, &block)
       (before, after) = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]

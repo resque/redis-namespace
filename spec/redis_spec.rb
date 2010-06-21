@@ -99,6 +99,7 @@ describe "redis" do
     @namespaced["bar"] = 2
     @namespaced["baz"] = 3
     @namespaced.keys("*").sort.should == %w( bar baz foo )
+    @namespaced.keys.sort.should == %w( bar baz foo )
   end
 
   it "can change its namespace" do
