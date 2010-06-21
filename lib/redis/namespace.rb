@@ -117,9 +117,12 @@ class Redis
       "zincrby"          => [ :first ],
       "zrange"           => [ :first ],
       "zrangebyscore"    => [ :first ],
+      "zrank"            => [ :first ],
       "zrem"             => [ :first ],
+      "zremrangebyrank"  => [ :first ],
       "zremrangebyscore" => [ :first ],
       "zrevrange"        => [ :first ],
+      "zrevrank"         => [ :first ],
       "zscore"           => [ :first ],
       "[]"               => [ :first ],
       "[]="              => [ :first ]
