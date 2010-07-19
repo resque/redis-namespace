@@ -72,6 +72,8 @@ describe "redis" do
     @namespaced.hgetall('foo').should == {'key' => 'value', 'key1' => 'value1'}
     @namespaced.hlen('foo').should == 2
     @namespaced.hkeys('foo').should == ['key', 'key1']
+    @namespaced.hmset('bar', 'key', 'value', 'key1', 'value1')
+    @namespaced.hgetall('bar').should == {'key' => 'value', 'key1' => 'value1'}
   end
 
   it "should properly intersect three sets" do

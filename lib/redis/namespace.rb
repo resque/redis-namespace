@@ -56,6 +56,7 @@ class Redis
       "getset"           => [ :first ],
       "hset"             => [ :first ],
       "hget"             => [ :first ],
+      "hmset"            => [ :first ],
       "hdel"             => [ :first ],
       "hexists"          => [ :first ],
       "hlen"             => [ :first ],
