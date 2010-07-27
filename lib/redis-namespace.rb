@@ -1,1 +1,1 @@
-require 'redis/namespace'
+require File.dirname(__FILE__) + '/../lib/redis/namespace'
