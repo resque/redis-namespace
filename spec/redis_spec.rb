@@ -50,19 +50,19 @@ describe "redis" do
     @namespaced['foo'] = 1000
     @namespaced['bar'] = 2000
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
-    @namespaced.mapped_mget('foo', 'baz', 'bar').should == {'foo'=>'1000', 'bar'=>'2000'}
+    @namespaced.mapped_mget('foo', 'baz', 'bar').should == {'foo'=>'1000', 'bar'=>'2000', 'baz' => nil}
   end
 
   it "should be able to use a namespace with mset" do
     @namespaced.mset('foo', '1000', 'bar', '2000')
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
-    @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
+    @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000', 'baz' => nil}
   end
 
   it "should be able to use a namespace with msetnx" do
     @namespaced.msetnx('foo', '1000', 'bar', '2000')
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1000', 'bar' => '2000' }
-    @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000'}
+    @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000', 'baz' => nil}
   end
 
   it "should be able to use a namespace with hashes" do
@@ -73,7 +73,12 @@ describe "redis" do
     @namespaced.hlen('foo').should == 2
     @namespaced.hkeys('foo').should == ['key', 'key1']
     @namespaced.hmset('bar', 'key', 'value', 'key1', 'value1')
-    @namespaced.hgetall('bar').should == {'key' => 'value', 'key1' => 'value1'}
+    @namespaced.hmget('bar', 'key', 'key1')
+    @namespaced.hmset('bar', 'a_number', 1)
+    @namespaced.hmget('bar', 'a_number').should == ['1']
+    @namespaced.hincrby('bar', 'a_number', 3)
+    @namespaced.hmget('bar', 'a_number').should == ['4']
+    @namespaced.hgetall('bar').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
   end
 
   it "should properly intersect three sets" do
