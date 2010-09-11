@@ -165,8 +165,13 @@ class Redis
     end
 
     def method_missing(command, *args, &block)
-      (before, after) = COMMANDS[command.to_s] ||
+      handling = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]
+
+      warn("redis-namespace does not know how to handle '#{command}' command. " \
+      "Passing it to redis as is.") if handling.nil?
+      return if handling.nil?
+      (before, after) = handling
 
       # Add the namespace to any parameters that are keys.
       case before
