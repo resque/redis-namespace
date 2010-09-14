@@ -122,6 +122,7 @@ class Redis
       "unsubscribe"      => [ :all ],
       "zadd"             => [ :first ],
       "zcard"            => [ :first ],
+      "zcount"           => [ :first ],
       "zincrby"          => [ :first ],
       "zrange"           => [ :first ],
       "zrangebyscore"    => [ :first ],
