@@ -184,6 +184,11 @@ class Redis
         args.push(last) if last
       when :alternate
         args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
+      when :sort
+        args[0] = add_namespace(args[0]) if args[0]
+        [:by, :get, :store].each do |key|
+          args[1][key] = add_namespace(args[1][key]) if args[1][key]
+        end if args[1].is_a?(Hash)
       end
 
       # Dispatch the command to Redis and store the result.

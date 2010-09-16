@@ -101,6 +101,24 @@ describe "redis" do
     @namespaced.sunion('foo', 'bar').sort.should == %w( 1 2 3 4 )
   end
 
+  it "should add namespace to sort" do
+    @namespaced.sadd('foo', 1)
+    @namespaced.sadd('foo', 2)
+    @namespaced.set('weight_1', 2)
+    @namespaced.set('weight_2', 1)
+    @namespaced.set('value_1', 'a')
+    @namespaced.set('value_2', 'b')
+
+    @namespaced.sort('foo').should == %w( 1 2 )
+    @namespaced.sort('foo', :limit => [0, 1]).should == %w( 1 )
+    @namespaced.sort('foo', :order => 'desc').should == %w( 2 1 )
+    @namespaced.sort('foo', :by => 'weight_*').should == %w( 2 1 )
+    @namespaced.sort('foo', :get => 'value_*').should == %w( a b )
+
+    @namespaced.sort('foo', :store => 'result')
+    @namespaced.lrange('result', 0, -1).should == %w( 1 2 )
+  end
+
   it "should yield the correct list of keys" do
     @namespaced["foo"] = 1
     @namespaced["bar"] = 2
