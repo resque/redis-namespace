@@ -78,6 +78,7 @@ class Redis
       "lrem"             => [ :first ],
       "lset"             => [ :first ],
       "ltrim"            => [ :first ],
+      "mapped_hmset"     => [ :first ],
       "mapped_mget"      => [ :all, :all ],
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],

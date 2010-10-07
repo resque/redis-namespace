@@ -79,6 +79,8 @@ describe "redis" do
     @namespaced.hincrby('bar', 'a_number', 3)
     @namespaced.hmget('bar', 'a_number').should == ['4']
     @namespaced.hgetall('bar').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
+    @namespaced.mapped_hmset('baz', {'key' => 'value', 'key1' => 'value1', 'a_number' => 4})
+    @namespaced.hgetall('baz').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
   end
 
   it "should properly intersect three sets" do
