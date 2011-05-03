@@ -45,6 +45,7 @@ class Redis
       "blpop"            => [ :exclude_last ],
       "brpop"            => [ :exclude_last ],
       "dbsize"           => [],
+      "debug"            => [ :exclude_first ],
       "decr"             => [ :first ],
       "decrby"           => [ :first ],
       "del"              => [ :all   ],
