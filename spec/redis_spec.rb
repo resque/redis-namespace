@@ -79,6 +79,12 @@ describe "redis" do
     @namespaced.hincrby('bar', 'a_number', 3)
     @namespaced.hmget('bar', 'a_number').should == ['4']
     @namespaced.hgetall('bar').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
+
+    @namespaced.hsetnx('foonx','nx',10).should be_true
+    @namespaced.hsetnx('foonx','nx',12).should be_false
+    @namespaced.hget('foonx','nx').should == "10"
+    @namespaced.hkeys('foonx').should     == %w{ nx }
+    @namespaced.hvals('foonx').should     == %w{ 10 }
   end
 
   it "should properly intersect three sets" do
