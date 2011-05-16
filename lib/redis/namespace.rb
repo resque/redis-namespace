@@ -181,7 +181,7 @@ class Redis
       if handling.nil?
         warn("redis-namespace does not know how to handle '#{command}' command.
               Passing it to redis as is.")
-        return
+        return @redis.send(command, *args, &block)
       end
 
       (before, after) = handling

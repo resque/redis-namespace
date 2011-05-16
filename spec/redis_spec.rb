@@ -20,6 +20,10 @@ describe "redis" do
     @redis.quit
   end
 
+  it "proxies `client` to the client" do
+    @namespaced.client.should == @redis.client
+  end
+
   it "should be able to use a namespace" do
     @namespaced['foo'].should == nil
     @namespaced['foo'] = 'chris'
