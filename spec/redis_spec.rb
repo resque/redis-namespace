@@ -147,6 +147,10 @@ describe "redis" do
     @namespaced['foo'].should == 'chris'
   end
 
+  it "should respond to :namespace=" do
+    @namespaced.respond_to?(:namespace=).should == true
+  end
+
   # Only test aliasing functionality for Redis clients that support aliases.
   unless Redis::Namespace::ALIASES.empty?
     it "should support command aliases (delete)" do
