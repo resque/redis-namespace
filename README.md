@@ -21,6 +21,14 @@ Installation
     $ gem install redis-namespace
 
 
+
+Testing
+=======
+
+    $ bundle install
+    $ rake
+
+
 Author
 =====
 

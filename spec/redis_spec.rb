@@ -1,6 +1,4 @@
 require File.dirname(__FILE__) + '/spec_helper'
-require 'redis/namespace'
-require 'logger'
 
 describe "redis" do
   before(:all) do
