@@ -5,8 +5,10 @@ Requires the redis gem.
 
 Namespaces all Redis calls.
 
-    r = Redis::Namespace.new(:ns, :redis => @r)
-    r['foo'] = 1000
+``` ruby
+r = Redis::Namespace.new(:ns, :redis => @r)
+r['foo'] = 1000
+```
 
 This will perform the equivalent of:
 
