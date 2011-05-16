@@ -83,6 +83,8 @@ describe "redis" do
     @namespaced.hget('foonx','nx').should == "10"
     @namespaced.hkeys('foonx').should     == %w{ nx }
     @namespaced.hvals('foonx').should     == %w{ 10 }
+    @namespaced.mapped_hmset('baz', {'key' => 'value', 'key1' => 'value1', 'a_number' => 4})
+    @namespaced.hgetall('baz').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
   end
 
   it "should properly intersect three sets" do
