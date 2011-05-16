@@ -159,8 +159,14 @@ class Redis
       method_missing(:type, key)
     end
 
+    alias_method :self_respond_to?, :respond_to?
+
     def respond_to?(command)
-      @redis.respond_to?(command)
+      if self_respond_to?(command)
+        true
+      else
+        @redis.respond_to?(command)
+      end
     end
 
     def keys(query = nil)
