@@ -178,9 +178,9 @@ class Redis
       handling = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]
 
+      # redis-namespace does not know how to handle this command.
+      # Passing it to @redis as is.
       if handling.nil?
-        warn("redis-namespace does not know how to handle '#{command}' command.
-              Passing it to redis as is.")
         return @redis.send(command, *args, &block)
       end
 
