@@ -134,6 +134,7 @@ class Redis
       "zremrangebyrank"  => [ :first ],
       "zremrangebyscore" => [ :first ],
       "zrevrange"        => [ :first ],
+      "zrevrangebyscore" => [ :first ],
       "zrevrank"         => [ :first ],
       "zscore"           => [ :first ],
       "[]"               => [ :first ],
