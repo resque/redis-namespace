@@ -51,6 +51,7 @@ class Redis
       "del"              => [ :all   ],
       "exists"           => [ :first ],
       "expire"           => [ :first ],
+      "expireat"         => [ :first ],
       "flushall"         => [],
       "flushdb"          => [],
       "get"              => [ :first ],
