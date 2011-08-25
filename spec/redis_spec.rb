@@ -37,6 +37,13 @@ describe "redis" do
     @namespaced.type('counter').should == 'string'
   end
 
+  it "should be able to use a namespace with bpop" do
+    @namespaced.rpush "foo", "string"
+    @namespaced.rpush "foo", "ns:string"
+    @namespaced.blpop("foo", 1).should == ["foo", "string"]
+    @namespaced.blpop("foo", 1).should == ["foo", "ns:string"]
+  end
+
   it "should be able to use a namespace with del" do
     @namespaced['foo'] = 1000
     @namespaced['bar'] = 2000

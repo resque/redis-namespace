@@ -42,7 +42,7 @@ class Redis
       "auth"             => [],
       "bgrewriteaof"     => [],
       "bgsave"           => [],
-      "blpop"            => [ :exclude_last ],
+      "blpop"            => [ :exclude_last, :first ],
       "brpop"            => [ :exclude_last ],
       "dbsize"           => [],
       "debug"            => [ :exclude_first ],
@@ -216,7 +216,12 @@ class Redis
       result = @redis.send(command, *args, &block)
 
       # Remove the namespace from results that are keys.
-      result = rem_namespace(result) if after == :all
+      case after
+      when :all
+        result = rem_namespace(result)
+      when :first
+        result[0] = rem_namespace(result[0])
+      end
 
       result
     end
