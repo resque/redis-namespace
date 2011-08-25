@@ -42,6 +42,7 @@ describe "redis" do
     @namespaced.rpush "foo", "ns:string"
     @namespaced.blpop("foo", 1).should == ["foo", "string"]
     @namespaced.blpop("foo", 1).should == ["foo", "ns:string"]
+    @namespaced.blpop("foo", 1).should == nil
   end
 
   it "should be able to use a namespace with del" do

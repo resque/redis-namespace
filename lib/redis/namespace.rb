@@ -220,7 +220,7 @@ class Redis
       when :all
         result = rem_namespace(result)
       when :first
-        result[0] = rem_namespace(result[0])
+        result[0] = rem_namespace(result[0]) if result
       end
 
       result
