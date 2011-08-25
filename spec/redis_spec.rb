@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe "redis" do
   before(:all) do
-    # use database 15 for testing so we dont accidentally step on you real data
+    # use database 15 for testing so we dont accidentally step on your real data
     @redis = Redis.new :db => 15
   end
 
