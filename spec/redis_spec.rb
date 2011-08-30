@@ -111,6 +111,26 @@ describe "redis" do
     @namespaced.sunion('foo', 'bar').sort.should == %w( 1 2 3 4 )
   end
 
+  it "should properly union two sorted sets with options" do
+    @namespaced.zadd('sort1', 1, 1)
+    @namespaced.zadd('sort1', 2, 2)
+    @namespaced.zadd('sort2', 2, 2)
+    @namespaced.zadd('sort2', 3, 3)
+    @namespaced.zadd('sort2', 4, 4)
+    @namespaced.zunionstore('union', ['sort1', 'sort2'], :weights => [2, 1])
+    @namespaced.zrevrange('union', 0, -1).should == %w( 2 4 3 1 )
+  end
+
+  it "should properly union two sorted sets without options" do
+    @namespaced.zadd('sort1', 1, 1)
+    @namespaced.zadd('sort1', 2, 2)
+    @namespaced.zadd('sort2', 2, 2)
+    @namespaced.zadd('sort2', 3, 3)
+    @namespaced.zadd('sort2', 4, 4)
+    @namespaced.zunionstore('union', ['sort1', 'sort2'])
+    @namespaced.zrevrange('union', 0, -1).should == %w( 4 2 3 1 )
+  end
+
   it "should add namespace to sort" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
