@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe "redis" do
   before(:all) do
-    # use database 15 for testing so we dont accidentally step on you real data
+    # use database 15 for testing so we dont accidentally step on your real data
     @redis = Redis.new :db => 15
   end
 
@@ -35,6 +35,14 @@ describe "redis" do
     @namespaced['counter'].to_i.should == 2
     @redis['counter'].should == nil
     @namespaced.type('counter').should == 'string'
+  end
+
+  it "should be able to use a namespace with bpop" do
+    @namespaced.rpush "foo", "string"
+    @namespaced.rpush "foo", "ns:string"
+    @namespaced.blpop("foo", 1).should == ["foo", "string"]
+    @namespaced.blpop("foo", 1).should == ["foo", "ns:string"]
+    @namespaced.blpop("foo", 1).should == nil
   end
 
   it "should be able to use a namespace with del" do
