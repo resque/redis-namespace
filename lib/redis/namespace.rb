@@ -25,6 +25,11 @@ class Redis
     #     Add the namespace to all arguments but the last, e.g.
     #       BLPOP key1 key2 timeout =>
     #       BLPOP namespace:key1 namespace:key2 timeout
+    #   :exclude_options
+    #     Add the namespace to all arguments, except the last argument,
+    #     if the last argument is a hash of options.
+    #       ZUNIONSTORE key1 2 key2 key3 WEIGHTS 2 1 =>
+    #       ZUNIONSTORE namespace:key1 2 namespace:key2 namespace:key3 WEIGHTS 2 1
     #   :alternate
     #     Add the namespace to every other argument, e.g.
     #       MSET key1 value1 key2 value2 =>
@@ -128,7 +133,7 @@ class Redis
       "zcard"            => [ :first ],
       "zcount"           => [ :first ],
       "zincrby"          => [ :first ],
-      "zinterstore"      => [ :all ],
+      "zinterstore"      => [ :exclude_options ],
       "zrange"           => [ :first ],
       "zrangebyscore"    => [ :first ],
       "zrank"            => [ :first ],
@@ -139,6 +144,7 @@ class Redis
       "zrevrangebyscore" => [ :first ],
       "zrevrank"         => [ :first ],
       "zscore"           => [ :first ],
+      "zunionstore"      => [ :exclude_options ],
       "[]"               => [ :first ],
       "[]="              => [ :first ]
     }
@@ -203,6 +209,14 @@ class Redis
         last = args.pop
         args = add_namespace(args)
         args.push(last) if last
+      when :exclude_options
+        if args.last.is_a?(Hash)
+          last = args.pop
+          args = add_namespace(args)
+          args.push(last)
+        else
+          args = add_namespace(args)
+        end
       when :alternate
         args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
       when :sort
