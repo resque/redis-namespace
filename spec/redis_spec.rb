@@ -96,6 +96,7 @@ describe "redis" do
     @namespaced.hkeys('foonx').should     == %w{ nx }
     @namespaced.hvals('foonx').should     == %w{ 10 }
     @namespaced.mapped_hmset('baz', {'key' => 'value', 'key1' => 'value1', 'a_number' => 4})
+    @namespaced.mapped_hmget('baz', 'key', 'key1', 'a_number').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
     @namespaced.hgetall('baz').should == {'key' => 'value', 'key1' => 'value1', 'a_number' => '4'}
   end
 
