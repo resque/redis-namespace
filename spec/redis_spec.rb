@@ -56,6 +56,66 @@ describe "redis" do
     @namespaced['baz'].should == nil
   end
 
+  it 'should be able to use a namespace with append' do
+    @namespaced['foo'] = 'bar'
+    @namespaced.append('foo','n').should == 4
+    @namespaced['foo'].should == 'barn'
+    @redis['foo'].should == 'bar'
+  end
+
+  it 'should be able to use a namespace with brpoplpush' do
+    @namespaced.lpush('foo','bar')
+    @namespaced.brpoplpush('foo','bar',0).should == 'bar'
+    @namespaced.lrange('foo',0,-1).should == []
+    @namespaced.lrange('bar',0,-1).should == ['bar']
+  end
+
+  it 'should be able to use a namespace with getbit' do
+    @namespaced.set('foo','bar')
+    @namespaced.getbit('foo',1).should == 1
+  end
+
+  it 'should be able to use a namespace with getrange' do
+    @namespaced.set('foo','bar')
+    @namespaced.getrange('foo',0,-1).should == 'bar'
+  end
+
+  it 'should be able to use a namespace with linsert' do
+    @namespaced.rpush('foo','bar')
+    @namespaced.rpush('foo','barn')
+    @namespaced.rpush('foo','bart')
+    @namespaced.linsert('foo','BEFORE','barn','barf').should == 4
+    @namespaced.lrange('foo',0,-1).should == ['bar','barf','barn','bart']
+  end
+
+  it 'should be able to use a namespace with lpushx' do
+    @namespaced.lpushx('foo','bar').should == 0
+    @namespaced.lpush('foo','boo')
+    @namespaced.lpushx('foo','bar').should == 2
+    @namespaced.lrange('foo',0,-1).should == ['bar','boo']
+  end
+
+  it 'should be able to use a namespace with rpushx' do
+    @namespaced.rpushx('foo','bar').should == 0
+    @namespaced.lpush('foo','boo')
+    @namespaced.rpushx('foo','bar').should == 2
+    @namespaced.lrange('foo',0,-1).should == ['boo','bar']
+  end
+
+  it 'should be able to use a namespace with setbit' do
+    @namespaced.setbit('virgin_key', 1, 1)
+    @namespaced.exists('virgin_key').should be_true
+    @namespaced.get('virgin_key').should == @namespaced.getrange('virgin_key',0,-1)
+  end
+
+  it 'should be able to use a namespace with setrange' do
+    @namespaced.setrange('foo', 0, 'bar')
+    @namespaced['foo'].should == 'bar'
+
+    @namespaced.setrange('bar', 2, 'foo')
+    @namespaced['bar'].should == "\000\000foo"
+  end
+
   it "should be able to use a namespace with mget" do
     @namespaced['foo'] = 1000
     @namespaced['bar'] = 2000
