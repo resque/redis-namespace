@@ -1,6 +1,8 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "redis" do
+  @redis_version = Gem::Version.new(Redis.current.info["redis_version"])
+
   before(:all) do
     # use database 15 for testing so we dont accidentally step on your real data
     @redis = Redis.new :db => 15
@@ -244,64 +246,66 @@ describe "redis" do
     @namespaced.respond_to?(:namespace=).should == true
   end
 
-  describe "redis 2.6 commands" do
-    it "should namespace bitcount" do
-      pending "awaiting implementaton of command in redis gem"
-    end
+  if @redis_version >= Gem::Version.new("2.6.0")
+    describe "redis 2.6 commands" do
+      it "should namespace bitcount" do
+        pending "awaiting implementaton of command in redis gem"
+      end
 
-    it "should namespace bitop" do
-      pending "awaiting implementaton of command in redis gem"
-    end
+      it "should namespace bitop" do
+        pending "awaiting implementaton of command in redis gem"
+      end
 
-    it "should namespace dump" do      
-      pending "awaiting implementaton of command in redis gem"
-    end
+      it "should namespace dump" do
+        pending "awaiting implementaton of command in redis gem"
+      end
 
-    it "should namespace hincrbyfloat" do
-      @namespaced.hset('mykey', 'field', 10.50)
-      @namespaced.hincrbyfloat('mykey', 'field', 0.1).should == 10.6
-    end
+      it "should namespace hincrbyfloat" do
+        @namespaced.hset('mykey', 'field', 10.50)
+        @namespaced.hincrbyfloat('mykey', 'field', 0.1).should == 10.6
+      end
 
-    it "should namespace incrbyfloat" do
-      @namespaced.set('mykey', 10.50)
-      @namespaced.incrbyfloat('mykey', 0.1).should == 10.6
-    end
+      it "should namespace incrbyfloat" do
+        @namespaced.set('mykey', 10.50)
+        @namespaced.incrbyfloat('mykey', 0.1).should == 10.6
+      end
 
-    it "should namespace object" do
-      @namespaced.set('foo', 1000)
-      @namespaced.object('encoding', 'foo').should == 'int'
-    end
+      it "should namespace object" do
+        @namespaced.set('foo', 1000)
+        @namespaced.object('encoding', 'foo').should == 'int'
+      end
 
-    it "should namespace persist" do
-      @namespaced.set('mykey', 'Hello')
-      @namespaced.expire('mykey', 60)
-      @namespaced.persist('mykey').should == true
-      @namespaced.ttl('mykey').should == -1
-    end
+      it "should namespace persist" do
+        @namespaced.set('mykey', 'Hello')
+        @namespaced.expire('mykey', 60)
+        @namespaced.persist('mykey').should == true
+        @namespaced.ttl('mykey').should == -1
+      end
 
-    it "should namespace pexpire" do
-      @namespaced.set('mykey', 'Hello')
-      @namespaced.pexpire('mykey', 60000).should == true
-    end
+      it "should namespace pexpire" do
+        @namespaced.set('mykey', 'Hello')
+        @namespaced.pexpire('mykey', 60000).should == true
+      end
 
-    it "should namespace pexpireat" do
-      @namespaced.set('mykey', 'Hello')
-      @namespaced.pexpire('mykey', 1555555555005).should == true
-    end
+      it "should namespace pexpireat" do
+        @namespaced.set('mykey', 'Hello')
+        @namespaced.pexpire('mykey', 1555555555005).should == true
+      end
 
-    it "should namespace psetex" do
-      @namespaced.psetex('mykey', 10000, 'Hello').should == 'OK'
-      @namespaced.get('mykey').should == 'Hello'
-    end
+      it "should namespace psetex" do
+        @namespaced.psetex('mykey', 10000, 'Hello').should == 'OK'
+        @namespaced.get('mykey').should == 'Hello'
+      end
 
-    it "should namespace pttl" do
-      @namespaced.set('mykey', 'Hello')
-      @namespaced.expire('mykey', 1)
-      @namespaced.pttl('mykey').should == 1000
-    end
+      it "should namespace pttl" do
+        @namespaced.set('mykey', 'Hello')
+        @namespaced.expire('mykey', 1)
+        @namespaced.pttl('mykey').should == 1000
+      end
 
-    it "should namespace restore" do
-      pending "awaiting implementaton of command in redis gem"
+      it "should namespace restore" do
+        pending "awaiting implementaton of command in redis gem"
+      end
     end
   end
 
