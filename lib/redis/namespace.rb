@@ -129,6 +129,7 @@ class Redis
       "ttl"              => [ :first ],
       "type"             => [ :first ],
       "unsubscribe"      => [ :all ],
+      "watch"            => [ :all ],
       "zadd"             => [ :first ],
       "zcard"            => [ :first ],
       "zcount"           => [ :first ],
@@ -171,11 +172,11 @@ class Redis
 
     alias_method :self_respond_to?, :respond_to?
 
-    def respond_to?(command)
-      if self_respond_to?(command)
+    def respond_to?(*args)
+      if self_respond_to?(*args)
         true
       else
-        @redis.respond_to?(command)
+        @redis.respond_to?(*args)
       end
     end
 
