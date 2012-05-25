@@ -94,6 +94,7 @@ class Redis
       "lset"             => [ :first ],
       "ltrim"            => [ :first ],
       "mapped_hmset"     => [ :first ],
+      "mapped_hmget"     => [ :first ],
       "mapped_mget"      => [ :all, :all ],
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],
