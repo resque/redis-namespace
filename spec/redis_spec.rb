@@ -245,17 +245,17 @@ describe "redis" do
   end
 
   describe "redis 2.6 commands" do
-    # Not implemented as of redis-3.0.0 driver
-    # it "should namespace bitcount" do
-    # end
+    it "should namespace bitcount" do
+      pending "awaiting implementaton of command in redis gem"
+    end
 
-    # Not implemented as of redis-3.0.0 driver
-    # it "should namespace bitop" do
-    # end
+    it "should namespace bitop" do
+      pending "awaiting implementaton of command in redis gem"
+    end
 
-    # Not implemented as of redis-3.0.0 driver
-    # it "should namespace dump" do      
-    # end
+    it "should namespace dump" do      
+      pending "awaiting implementaton of command in redis gem"
+    end
 
     it "should namespace hincrbyfloat" do
       @namespaced.hset('mykey', 'field', 10.50)
@@ -300,9 +300,9 @@ describe "redis" do
       @namespaced.pttl('mykey').should == 1000
     end
 
-    # Not implemented as of redis-3.0.0 driver
-    # it "should namespace restore" do
-    # end
+    it "should namespace restore" do
+      pending "awaiting implementaton of command in redis gem"
+    end
   end
 
   # Only test aliasing functionality for Redis clients that support aliases.
