@@ -172,11 +172,11 @@ class Redis
 
     alias_method :self_respond_to?, :respond_to?
 
-    def respond_to?(*args)
-      if self_respond_to?(*args)
+    def respond_to?(command)
+      if self_respond_to?(command)
         true
       else
-        @redis.respond_to?(*args)
+        @redis.respond_to?(command)
       end
     end
 
