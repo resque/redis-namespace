@@ -35,3 +35,4 @@ Author
 =====
 
 Chris Wanstrath :: chris@ozmm.org
+Terence Lee :: hone02@gmail.com

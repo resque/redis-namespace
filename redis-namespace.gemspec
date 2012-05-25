@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.summary           = "Namespaces Redis commands."
   s.homepage          = "http://github.com/defunkt/redis-namespace"
   s.email             = "chris@ozmm.org"
-  s.authors           = [ "Chris Wanstrath" ]
+  s.authors           = [ "Chris Wanstrath", "Terence Lee" ]
   s.has_rdoc          = false
 
   s.files             = %w( README.md Rakefile LICENSE )
