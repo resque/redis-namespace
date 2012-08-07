@@ -1,3 +1,8 @@
+## 1.2.1
+
+Features:
+  - make redis connection accessible as a reader
+
 ## 1.2.0
 
 Features:
