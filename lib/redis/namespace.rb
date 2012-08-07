@@ -183,6 +183,7 @@ class Redis
               end
 
     attr_accessor :namespace
+    attr_reader :redis
 
     def initialize(namespace, options = {})
       @namespace = namespace
