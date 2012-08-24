@@ -228,6 +228,24 @@ describe "redis" do
     @namespaced.keys.sort.should == %w( bar baz foo )
   end
 
+  it "should add namepsace to multi blocks" do
+    @namespaced.mapped_hmset "a_hash", {"foo" => "bar"}
+    @namespaced.multi do |r|
+      r.del "a_hash"
+      r.mapped_hmset "a_hash", {"yin" => "yang"}
+    end
+    @namespaced.hgetall("a_hash").should == {"yin" => "yang"}
+  end
+
+  it "should add namespace to pipelined blocks" do
+    @namespaced.mapped_hmset "a_hash", {"foo" => "bar"}
+    @namespaced.pipelined do |r|
+      r.del "a_hash"
+      r.mapped_hmset "a_hash", {"yin" => "yang"}
+    end
+    @namespaced.hgetall("a_hash").should == {"yin" => "yang"}
+  end
+
   it "can change its namespace" do
     @namespaced['foo'].should == nil
     @namespaced['foo'] = 'chris'

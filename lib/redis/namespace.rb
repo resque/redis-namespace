@@ -210,6 +210,14 @@ class Redis
       query.nil? ? super("*") : super
     end
 
+    def multi(&block)
+      namespaced_block(:multi, &block)
+    end
+
+    def pipelined(&block)
+      namespaced_block(:pipelined, &block)
+    end
+
     def method_missing(command, *args, &block)
       handling = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]
@@ -268,6 +276,16 @@ class Redis
     end
 
   private
+
+    def namespaced_block(command, &block)
+      original = @redis
+      redis.send(command) do |r|
+        @redis = r
+        yield self
+      end
+      @redis = original
+    end
+
     def add_namespace(key)
       return key unless key && @namespace
 
