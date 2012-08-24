@@ -246,6 +246,15 @@ describe "redis" do
     @namespaced.hgetall("a_hash").should == {"yin" => "yang"}
   end
 
+  it "should returned response array from pipelined block" do
+    @namespaced.mset "foo", "bar", "yin", "yang"
+    result = @namespaced.pipelined do |r|
+      r["foo"]
+      r["yin"]
+    end
+    result.should == ["bar", "yang"]
+  end
+
   it "can change its namespace" do
     @namespaced['foo'].should == nil
     @namespaced['foo'] = 'chris'

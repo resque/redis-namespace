@@ -279,11 +279,12 @@ class Redis
 
     def namespaced_block(command, &block)
       original = @redis
-      redis.send(command) do |r|
+      result = redis.send(command) do |r|
         @redis = r
         yield self
       end
       @redis = original
+      result
     end
 
     def add_namespace(key)
