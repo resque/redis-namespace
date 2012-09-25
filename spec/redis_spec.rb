@@ -215,6 +215,8 @@ describe "redis" do
     @namespaced.sort('foo', :order => 'desc').should == %w( 2 1 )
     @namespaced.sort('foo', :by => 'weight_*').should == %w( 2 1 )
     @namespaced.sort('foo', :get => 'value_*').should == %w( a b )
+    @namespaced.sort('foo', :get => '#').should == %w( 1 2 )
+    @namespaced.sort('foo', :get => ['#', 'value_*']).should == [["1", "a"], ["2", "b"]]
 
     @namespaced.sort('foo', :store => 'result')
     @namespaced.lrange('result', 0, -1).should == %w( 1 2 )
