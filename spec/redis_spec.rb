@@ -42,8 +42,10 @@ describe "redis" do
   it "should be able to use a namespace with bpop" do
     @namespaced.rpush "foo", "string"
     @namespaced.rpush "foo", "ns:string"
+    @namespaced.rpush "foo", "string_no_timeout"
     @namespaced.blpop("foo", 1).should == ["foo", "string"]
     @namespaced.blpop("foo", 1).should == ["foo", "ns:string"]
+    @namespaced.blpop("foo").should == ["foo", "string_no_timeout"]
     @namespaced.blpop("foo", 1).should == nil
   end
 
