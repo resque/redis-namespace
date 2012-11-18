@@ -233,7 +233,7 @@ class Redis
         args = add_namespace(args)
         args.unshift(first) if first
       when :exclude_last
-        last = args.pop
+        last = args.pop unless args.length == 1
         args = add_namespace(args)
         args.push(last) if last
       when :exclude_options
