@@ -347,7 +347,7 @@ describe "redis" do
       it "should namespace pttl" do
         @namespaced.set('mykey', 'Hello')
         @namespaced.expire('mykey', 1)
-        @namespaced.pttl('mykey').should == 1000
+        @namespaced.pttl('mykey').should >= 0
       end
 
       it "should namespace restore" do
