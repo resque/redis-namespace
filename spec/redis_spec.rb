@@ -277,7 +277,8 @@ describe "redis" do
     @namespaced.respond_to?(:namespace=).should == true
   end
 
-  if @redis_version >= Gem::Version.new("2.6.0")
+  # Redis 2.6 RC reports its version as 2.5.
+  if @redis_version >= Gem::Version.new("2.5.0")
     describe "redis 2.6 commands" do
       it "should namespace bitcount" do
         pending "awaiting implementaton of command in redis gem"
@@ -336,6 +337,36 @@ describe "redis" do
 
       it "should namespace restore" do
         pending "awaiting implementaton of command in redis gem"
+      end
+
+      it "should namespace eval keys passed in as array args" do
+        @namespaced.
+          eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]).
+          should == %w[ns:k1 ns:k2]
+      end
+
+      it "should namespace eval keys passed in as hash args" do
+        @namespaced.
+          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+          should == %w[ns:k1 ns:k2]
+      end
+
+      context '#evalsha' do
+        let!(:sha) do
+          @namespaced.script(:load, "return {KEYS[1], KEYS[2]}")
+        end
+
+        it "should namespace evalsha keys passed in as array args" do
+          @namespaced.
+            evalsha(sha, %w[k1 k2], %w[arg1 arg2]).
+            should == %w[ns:k1 ns:k2]
+        end
+
+        it "should namespace evalsha keys passed in as hash args" do
+          @namespaced.
+            evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should == %w[ns:k1 ns:k2]
+        end
       end
     end
   end
