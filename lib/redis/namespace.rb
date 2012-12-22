@@ -248,9 +248,17 @@ class Redis
         args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
       when :sort
         args[0] = add_namespace(args[0]) if args[0]
-        [:by, :get, :store].each do |key|
-          args[1][key] = add_namespace(args[1][key]) if args[1][key]
-        end if args[1].is_a?(Hash)
+        if args[1].is_a?(Hash)
+          [:by, :store].each do |key|
+            args[1][key] = add_namespace(args[1][key]) if args[1][key]
+          end
+
+          args[1][:get] = Array(args[1][:get])
+
+          args[1][:get].each_index do |i|
+            args[1][:get][i] = add_namespace(args[1][:get][i]) unless args[1][:get][i] == "#"
+          end
+        end
       end
 
       # Dispatch the command to Redis and store the result.
