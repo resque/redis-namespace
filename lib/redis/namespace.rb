@@ -184,7 +184,7 @@ class Redis
               else {}
               end
 
-    attr_accessor :namespace
+    attr_writer :namespace
     attr_reader :redis
 
     def initialize(namespace, options = {})
@@ -218,6 +218,17 @@ class Redis
 
     def pipelined(&block)
       namespaced_block(:pipelined, &block)
+    end
+
+    def namespace(desired_namespace = nil)
+      return @namespace if desired_namespace.nil?
+      begin
+        saved_namespace = @namespace
+        @namespace = desired_namespace
+        yield
+      ensure
+        @namespace = saved_namespace
+      end
     end
 
     def method_missing(command, *args, &block)

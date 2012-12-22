@@ -273,6 +273,21 @@ describe "redis" do
     @namespaced['foo'].should == 'chris'
   end
 
+  it "can accept a temporary namespace" do
+    @namespaced.namespace.should == :ns
+    @namespaced['foo'].should == nil
+
+    @namespaced.namespace(:spec) do
+      @namespaced.namespace.should == :spec
+      @namespaced['foo'].should == nil
+      @namespaced['foo'] = 'jake'
+      @namespaced['foo'].should == 'jake'
+    end
+
+    @namespaced.namespace.should == :ns
+    @namespaced['foo'].should == nil
+  end
+
   it "should respond to :namespace=" do
     @namespaced.respond_to?(:namespace=).should == true
   end
