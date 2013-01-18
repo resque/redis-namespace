@@ -64,6 +64,8 @@ class Redis
       "exists"           => [ :first ],
       "expire"           => [ :first ],
       "expireat"         => [ :first ],
+      "eval"             => [ :eval_style ],
+      "evalsha"          => [ :eval_style ],
       "flushall"         => [],
       "flushdb"          => [],
       "get"              => [ :first ],
@@ -182,7 +184,7 @@ class Redis
               else {}
               end
 
-    attr_accessor :namespace
+    attr_writer :namespace
     attr_reader :redis
 
     def initialize(namespace, options = {})
@@ -210,6 +212,25 @@ class Redis
       query.nil? ? super("*") : super
     end
 
+    def multi(&block)
+      namespaced_block(:multi, &block)
+    end
+
+    def pipelined(&block)
+      namespaced_block(:pipelined, &block)
+    end
+
+    def namespace(desired_namespace = nil)
+      return @namespace if desired_namespace.nil?
+      begin
+        saved_namespace = @namespace
+        @namespace = desired_namespace
+        yield
+      ensure
+        @namespace = saved_namespace
+      end
+    end
+
     def method_missing(command, *args, &block)
       handling = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]
@@ -233,7 +254,7 @@ class Redis
         args = add_namespace(args)
         args.unshift(first) if first
       when :exclude_last
-        last = args.pop
+        last = args.pop unless args.length == 1
         args = add_namespace(args)
         args.push(last) if last
       when :exclude_options
@@ -248,9 +269,33 @@ class Redis
         args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
       when :sort
         args[0] = add_namespace(args[0]) if args[0]
-        [:by, :get, :store].each do |key|
-          args[1][key] = add_namespace(args[1][key]) if args[1][key]
-        end if args[1].is_a?(Hash)
+        if args[1].is_a?(Hash)
+          [:by, :store].each do |key|
+            args[1][key] = add_namespace(args[1][key]) if args[1][key]
+          end
+
+          args[1][:get] = Array(args[1][:get])
+
+          args[1][:get].each_index do |i|
+            args[1][:get][i] = add_namespace(args[1][:get][i]) unless args[1][:get][i] == "#"
+          end
+        end
+      when :eval_style
+        # redis.eval() and evalsha() can either take the form:
+        #
+        #   redis.eval(script, [key1, key2], [argv1, argv2])
+        #
+        # Or:
+        #
+        #   redis.eval(script, :keys => ['k1', 'k2'], :argv => ['arg1', 'arg2'])
+        #
+        # This is a tricky + annoying special case, where we only want the `keys`
+        # argument to be namespaced.
+        if args.last.is_a?(Hash)
+          args.last[:keys] = add_namespace(args.last[:keys])
+        else
+          args[1] = add_namespace(args[1])
+        end
       end
 
       # Dispatch the command to Redis and store the result.
@@ -268,6 +313,17 @@ class Redis
     end
 
   private
+
+    def namespaced_block(command, &block)
+      original = @redis
+      result = redis.send(command) do |r|
+        @redis = r
+        yield self
+      end
+      @redis = original
+      result
+    end
+
     def add_namespace(key)
       return key unless key && @namespace
 

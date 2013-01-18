@@ -42,8 +42,10 @@ describe "redis" do
   it "should be able to use a namespace with bpop" do
     @namespaced.rpush "foo", "string"
     @namespaced.rpush "foo", "ns:string"
+    @namespaced.rpush "foo", "string_no_timeout"
     @namespaced.blpop("foo", 1).should == ["foo", "string"]
     @namespaced.blpop("foo", 1).should == ["foo", "ns:string"]
+    @namespaced.blpop("foo").should == ["foo", "string_no_timeout"]
     @namespaced.blpop("foo", 1).should == nil
   end
 
@@ -215,6 +217,8 @@ describe "redis" do
     @namespaced.sort('foo', :order => 'desc').should == %w( 2 1 )
     @namespaced.sort('foo', :by => 'weight_*').should == %w( 2 1 )
     @namespaced.sort('foo', :get => 'value_*').should == %w( a b )
+    @namespaced.sort('foo', :get => '#').should == %w( 1 2 )
+    @namespaced.sort('foo', :get => ['#', 'value_*']).should == [["1", "a"], ["2", "b"]]
 
     @namespaced.sort('foo', :store => 'result')
     @namespaced.lrange('result', 0, -1).should == %w( 1 2 )
@@ -226,6 +230,33 @@ describe "redis" do
     @namespaced["baz"] = 3
     @namespaced.keys("*").sort.should == %w( bar baz foo )
     @namespaced.keys.sort.should == %w( bar baz foo )
+  end
+
+  it "should add namepsace to multi blocks" do
+    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.multi do |r|
+      r.del "foo"
+      r.mapped_hmset "foo", {"key1" => "value1"}
+    end
+    @namespaced.hgetall("foo").should == {"key1" => "value1"}
+  end
+
+  it "should add namespace to pipelined blocks" do
+    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.pipelined do |r|
+      r.del "foo"
+      r.mapped_hmset "foo", {"key1" => "value1"}
+    end
+    @namespaced.hgetall("foo").should == {"key1" => "value1"}
+  end
+
+  it "should returned response array from pipelined block" do
+    @namespaced.mset "foo", "bar", "key", "value"
+    result = @namespaced.pipelined do |r|
+      r["foo"]
+      r["key"]
+    end
+    result.should == ["bar", "value"]
   end
 
   it "can change its namespace" do
@@ -242,11 +273,27 @@ describe "redis" do
     @namespaced['foo'].should == 'chris'
   end
 
+  it "can accept a temporary namespace" do
+    @namespaced.namespace.should == :ns
+    @namespaced['foo'].should == nil
+
+    @namespaced.namespace(:spec) do
+      @namespaced.namespace.should == :spec
+      @namespaced['foo'].should == nil
+      @namespaced['foo'] = 'jake'
+      @namespaced['foo'].should == 'jake'
+    end
+
+    @namespaced.namespace.should == :ns
+    @namespaced['foo'].should == nil
+  end
+
   it "should respond to :namespace=" do
     @namespaced.respond_to?(:namespace=).should == true
   end
 
-  if @redis_version >= Gem::Version.new("2.6.0")
+  # Redis 2.6 RC reports its version as 2.5.
+  if @redis_version >= Gem::Version.new("2.5.0")
     describe "redis 2.6 commands" do
       it "should namespace bitcount" do
         pending "awaiting implementaton of command in redis gem"
@@ -300,11 +347,41 @@ describe "redis" do
       it "should namespace pttl" do
         @namespaced.set('mykey', 'Hello')
         @namespaced.expire('mykey', 1)
-        @namespaced.pttl('mykey').should == 1000
+        @namespaced.pttl('mykey').should >= 0
       end
 
       it "should namespace restore" do
         pending "awaiting implementaton of command in redis gem"
+      end
+
+      it "should namespace eval keys passed in as array args" do
+        @namespaced.
+          eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]).
+          should == %w[ns:k1 ns:k2]
+      end
+
+      it "should namespace eval keys passed in as hash args" do
+        @namespaced.
+          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+          should == %w[ns:k1 ns:k2]
+      end
+
+      context '#evalsha' do
+        let!(:sha) do
+          @namespaced.script(:load, "return {KEYS[1], KEYS[2]}")
+        end
+
+        it "should namespace evalsha keys passed in as array args" do
+          @namespaced.
+            evalsha(sha, %w[k1 k2], %w[arg1 arg2]).
+            should == %w[ns:k1 ns:k2]
+        end
+
+        it "should namespace evalsha keys passed in as hash args" do
+          @namespaced.
+            evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should == %w[ns:k1 ns:k2]
+        end
       end
     end
   end
