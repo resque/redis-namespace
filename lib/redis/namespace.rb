@@ -186,10 +186,12 @@ class Redis
 
     attr_writer :namespace
     attr_reader :redis
+    attr_accessor :warning
 
     def initialize(namespace, options = {})
       @namespace = namespace
       @redis = options[:redis] || Redis.current
+      @warning = options[:warning] || false
     end
 
     # Ruby defines a now deprecated type method so we need to override it here
@@ -236,8 +238,10 @@ class Redis
         COMMANDS[ALIASES[command.to_s]]
 
       # redis-namespace does not know how to handle this command.
-      # Passing it to @redis as is.
+      # Passing it to @redis as is, where redis-namespace shows
+      # a warning message if @warning is set.
       if handling.nil?
+        warn("Passing '#{command}' command to redis as is.") if @warning
         return @redis.send(command, *args, &block)
       end
 
