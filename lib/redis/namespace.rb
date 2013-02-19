@@ -223,14 +223,12 @@ class Redis
     end
 
     def namespace(desired_namespace = nil)
-      return @namespace if desired_namespace.nil?
-      begin
-        saved_namespace = @namespace
-        @namespace = desired_namespace
-        yield
-      ensure
-        @namespace = saved_namespace
+      if desired_namespace
+        yield Redis::Namespace.new(desired_namespace,
+                                   :redis => @redis)
       end
+
+      @namespace
     end
 
     def method_missing(command, *args, &block)

@@ -277,11 +277,11 @@ describe "redis" do
     @namespaced.namespace.should eq(:ns)
     @namespaced['foo'].should eq(nil)
 
-    @namespaced.namespace(:spec) do
-      @namespaced.namespace.should eq(:spec)
-      @namespaced['foo'].should eq(nil)
-      @namespaced['foo'] = 'jake'
-      @namespaced['foo'].should eq('jake')
+    @namespaced.namespace(:spec) do |temp_ns|
+      temp_ns.namespace.should eq(:spec)
+      temp_ns['foo'].should eq(nil)
+      temp_ns['foo'] = 'jake'
+      temp_ns['foo'].should eq('jake')
     end
 
     @namespaced.namespace.should eq(:ns)
