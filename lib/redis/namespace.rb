@@ -104,6 +104,7 @@ class Redis
       "mapped_hmset"     => [ :first ],
       "mapped_hmget"     => [ :first ],
       "mapped_mget"      => [ :all, :all ],
+      "mapped_mset"      => [ :all ],
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],
       "move"             => [ :first ],
