@@ -142,6 +142,15 @@ describe "redis" do
     @namespaced.mapped_mget('foo', 'baz', 'bar').should == { 'foo' => '1000', 'bar' => '2000', 'baz' => nil}
   end
 
+  it "should be able to use a namespace with mapped_msetnx" do
+    puts @namespaced.keys.inspect
+    @namespaced.set('foo','1')
+    @namespaced.mapped_msetnx('foo'=>'1000', 'bar'=>'2000').should be_false
+    @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1', 'bar' => nil }
+    @namespaced.mapped_msetnx('bar'=>'2000', 'baz'=>'1000').should be_true
+    @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1', 'bar' => '2000' }
+  end
+
   it "should be able to use a namespace with hashes" do
     @namespaced.hset('foo', 'key', 'value')
     @namespaced.hset('foo', 'key1', 'value1')
