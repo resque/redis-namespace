@@ -105,6 +105,7 @@ class Redis
       "mapped_hmget"     => [ :first ],
       "mapped_mget"      => [ :all, :all ],
       "mapped_mset"      => [ :all ],
+      "mapped_msetnx"    => [ :all ],
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],
       "move"             => [ :first ],
