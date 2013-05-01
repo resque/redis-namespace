@@ -292,6 +292,17 @@ describe "redis" do
     @namespaced.respond_to?(:namespace=).should eq(true)
   end
 
+  it "should respond to :warning=" do
+    @namespaced.respond_to?(:warning=).should == true
+  end
+
+  it "should warn against unknown commands if :warning is true" do
+    @namespaced.warning = true
+    capture_stderr {
+      @namespaced.unknown('foo')
+    }.should == "Passing 'unknown' command to redis as is."
+  end
+
   # Redis 2.6 RC reports its version as 2.5.
   if @redis_version >= Gem::Version.new("2.5.0")
     describe "redis 2.6 commands" do
