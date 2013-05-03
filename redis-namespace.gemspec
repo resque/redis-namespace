@@ -4,8 +4,8 @@ Gem::Specification.new do |s|
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Namespaces Redis commands."
   s.homepage          = "http://github.com/defunkt/redis-namespace"
-  s.email             = "chris@ozmm.org"
-  s.authors           = [ "Chris Wanstrath", "Terence Lee" ]
+  s.email             = ["chris@ozmm.org", "hone02@gmail.com", "steve@steveklabnik.com"]
+  s.authors           = [ "Chris Wanstrath", "Terence Lee", "Steve Klabnik"]
   s.has_rdoc          = false
 
   s.files             = %w( README.md Rakefile LICENSE )
