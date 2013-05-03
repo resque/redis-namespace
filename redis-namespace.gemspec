@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version           = "1.2.1"
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Namespaces Redis commands."
-  s.homepage          = "http://github.com/defunkt/redis-namespace"
+  s.homepage          = "http://github.com/resque/redis-namespace"
   s.email             = ["chris@ozmm.org", "hone02@gmail.com", "steve@steveklabnik.com"]
   s.authors           = [ "Chris Wanstrath", "Terence Lee", "Steve Klabnik"]
   s.has_rdoc          = false
