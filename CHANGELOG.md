@@ -1,3 +1,13 @@
+## 1.3.0
+
+Features:
+  - Added commands: `multi`, `pipelined`, `mapped_mset`, and `mapped_msetnx`
+  - Added temporary namespaces that last for the duration of a block
+  - Unknown commands now warn
+  - Added `mapped_mset` command
+
+Also lots of bug fixes.
+
 ## 1.2.1
 
 Features:
