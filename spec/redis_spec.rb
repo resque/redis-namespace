@@ -271,6 +271,15 @@ describe "redis" do
     result.should eq(["bar", "value"])
   end
 
+  it "should add namespace to strlen" do
+    @namespaced.set("mykey", "123456")
+    @namespaced.strlen("mykey").should eq(6)
+  end
+
+  it "should not add namespace to echo" do
+    @namespaced.echo(123).should eq("123")
+  end
+
   it "can change its namespace" do
     @namespaced['foo'].should eq(nil)
     @namespaced['foo'] = 'chris'
