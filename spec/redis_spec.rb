@@ -253,6 +253,17 @@ describe "redis" do
     @namespaced.hgetall("foo").should eq({"key1" => "value1"})
   end
 
+  it "should pass through multi commands without block" do
+    @namespaced.mapped_hmset "foo", {"key" => "value"}
+
+    @namespaced.multi
+    @namespaced.del "foo"
+    @namespaced.mapped_hmset "foo", {"key1" => "value1"}
+    @namespaced.exec
+
+    @namespaced.hgetall("foo").should eq({"key1" => "value1"})
+  end
+
   it "should add namespace to pipelined blocks" do
     @namespaced.mapped_hmset "foo", {"key" => "value"}
     @namespaced.pipelined do |r|
