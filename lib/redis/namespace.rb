@@ -220,7 +220,11 @@ class Redis
     end
 
     def multi(&block)
-      namespaced_block(:multi, &block)
+      if block_given?
+        namespaced_block(:multi, &block)
+      else
+        method_missing(:multi)
+      end
     end
 
     def pipelined(&block)
