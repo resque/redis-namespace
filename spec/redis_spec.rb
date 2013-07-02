@@ -264,6 +264,13 @@ describe "redis" do
     @namespaced.hgetall("foo").should eq({"key1" => "value1"})
   end
 
+  it 'should return futures without attempting to remove namespaces' do
+    @namespaced.multi do
+      @future = @namespaced.keys('*')
+    end
+    @future.class.should be(Redis::Future)
+  end
+
   it "should add namespace to pipelined blocks" do
     @namespaced.mapped_hmset "foo", {"key" => "value"}
     @namespaced.pipelined do |r|
