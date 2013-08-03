@@ -175,6 +175,10 @@ class Redis
       query.nil? ? super("*") : super
     end
 
+    def exec
+      method_missing(:exec)
+    end
+
     def method_missing(command, *args, &block)
       handling = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]
