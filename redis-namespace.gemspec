@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = "redis-namespace"
-  s.version           = "1.3.0"
+  s.version           = "1.3.1"
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Namespaces Redis commands."
   s.homepage          = "http://github.com/resque/redis-namespace"
