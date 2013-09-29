@@ -244,6 +244,10 @@ class Redis
       method_missing(:exec)
     end
 
+    def eval(*args)
+      method_missing(:eval, *args)
+    end
+
     def method_missing(command, *args, &block)
       handling = COMMANDS[command.to_s] ||
         COMMANDS[ALIASES[command.to_s]]

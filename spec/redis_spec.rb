@@ -433,6 +433,21 @@ describe "redis" do
             should eq(%w[ns:k1 ns:k2])
         end
       end
+
+      context "in a nested namespace" do
+        let(:nested_namespace) { Redis::Namespace.new(:nest, :redis => @namespaced) }
+        let(:sha) { nested_namespace.script(:load, "return {KEYS[1], KEYS[2]}") }
+
+        it "should namespace eval keys passed in as hash args" do
+          nested_namespace.
+          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+          should eq(%w[ns:nest:k1 ns:nest:k2])
+        end
+        it "should namespace evalsha keys passed in as hash args" do
+          nested_namespace.evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should eq(%w[ns:nest:k1 ns:nest:k2])
+        end
+      end
     end
   end
 
