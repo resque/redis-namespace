@@ -1,4 +1,5 @@
 require 'redis'
+require 'redis/namespace/version'
 
 class Redis
   class Namespace

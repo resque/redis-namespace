@@ -1,6 +1,10 @@
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'redis/namespace/version'
+
 Gem::Specification.new do |s|
   s.name              = "redis-namespace"
-  s.version           = "1.3.1"
+  s.version           = Redis::Namespace::VERSION
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Namespaces Redis commands."
   s.homepage          = "http://github.com/resque/redis-namespace"
