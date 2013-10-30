@@ -143,7 +143,6 @@ describe "redis" do
   end
 
   it "should be able to use a namespace with mapped_msetnx" do
-    puts @namespaced.keys.inspect
     @namespaced.set('foo','1')
     @namespaced.mapped_msetnx('foo'=>'1000', 'bar'=>'2000').should be_false
     @namespaced.mapped_mget('foo', 'bar').should == { 'foo' => '1', 'bar' => nil }
