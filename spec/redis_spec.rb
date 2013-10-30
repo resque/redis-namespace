@@ -39,6 +39,14 @@ describe "redis" do
     @namespaced.type('counter').should eq('string')
   end
 
+  context 'when sending capital commands (issue 68)' do
+    it 'should be able to use a namespace' do
+      @namespaced.send('SET', 'fubar', 'quux')
+      @redis.get('fubar').should be_nil
+      @namespaced.get('fubar').should eq 'quux'
+    end
+  end
+
   it "should be able to use a namespace with bpop" do
     @namespaced.rpush "foo", "string"
     @namespaced.rpush "foo", "ns:string"

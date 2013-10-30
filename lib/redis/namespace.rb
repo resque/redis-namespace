@@ -257,8 +257,9 @@ class Redis
     end
 
     def method_missing(command, *args, &block)
-      handling = COMMANDS[command.to_s] ||
-        COMMANDS[ALIASES[command.to_s]]
+      command_for_lookup = command.to_s.downcase
+      handling = COMMANDS[command_for_lookup] ||
+        COMMANDS[ALIASES[command_for_lookup]]
 
       # redis-namespace does not know how to handle this command.
       # Passing it to @redis as is, where redis-namespace shows
