@@ -35,6 +35,13 @@ class Redis
     #     Add the namespace to every other argument, e.g.
     #       MSET key1 value1 key2 value2 =>
     #       MSET namespace:key1 value1 namespace:key2 value2
+    #   :sort
+    #     Add namespace to first argument if it is non-nil
+    #     Add namespace to second arg's :by and :store if second arg is a Hash
+    #     Add namespace to each element in second arg's :get if second arg is
+    #       a Hash; forces second arg's :get to be an Array if present.
+    #   :eval_style
+    #     Add namespace to each element in keys argument (via options hash or multi-args)
     #
     # The second element in the value array describes how to modify
     # the return value of the Redis call. It can be one of:
