@@ -1,3 +1,17 @@
+## 1.3.2
+
+ - Fix #68: Capital commands (e.g. redis.send('GET', 'foo'))
+ - Fix #67: Nested namespace vs. `eval` command
+ - Fix #65: Require redis ~> 3.0.4 for upstream bugfix
+ - Feature: Resque::Namespace::VERSION constant
+
+## 1.3.1
+
+ - Fix: (Security) don't proxy `exec` through `#method_missing`
+ - Fix #62: Don't try to remove namespace from `Redis::Future`
+ - Fix #61: Support `multi` with no block
+ - Feature #58: Support `echo`, `exec`, `strlen` commands
+
 ## 1.3.0
 
 Features:
