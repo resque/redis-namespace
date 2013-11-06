@@ -377,7 +377,7 @@ class Redis
       when Hash
         Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
       else
-        key.to_s.gsub(/^#{@namespace}:/, "")
+        key.to_s.sub(/\A#{@namespace}:/, '')
       end
     end
   end
