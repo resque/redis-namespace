@@ -458,6 +458,261 @@ describe "redis" do
     end
   end
 
+  # Redis 2.8 RC reports its version as 2.7.
+  if @redis_version >= Gem::Version.new("2.7.105")
+    describe "redis 2.8 commands" do
+      context 'keyspace scan methods' do
+        let(:keys) do
+          %w(alpha ns:beta gamma ns:delta ns:epsilon ns:zeta:one ns:zeta:two ns:theta)
+        end
+        let(:namespaced_keys) do
+          keys.map{|k| k.dup.sub!(/\Ans:/,'') }.compact.sort
+        end
+        before(:each) do
+          keys.each do |key|
+            @redis.set(key, key)
+          end
+        end
+        let(:matching_namespaced_keys) do
+          namespaced_keys.select{|k| k[/\Azeta:/] }.compact.sort
+        end
+
+        context '#scan' do
+          context 'when :match supplied' do
+            it 'should retrieve the proper keys' do
+              _, result = @namespaced.scan(0, :match => 'zeta:*', :count => 1000)
+              result.should =~ matching_namespaced_keys
+            end
+          end
+          context 'without :match supplied' do
+            it 'should retrieve the proper keys' do
+              _, result = @namespaced.scan(0, :count => 1000)
+              result.should =~ namespaced_keys
+            end
+          end
+        end if Redis.current.respond_to?(:scan)
+
+        context '#scan_each' do
+          context 'when :match supplied' do
+            context 'when given a block' do
+              it 'should yield unnamespaced' do
+                results = []
+                @namespaced.scan_each(:match => 'zeta:*', :count => 1000) {|k| results << k }
+                results.should =~ matching_namespaced_keys
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that un-namespaces' do
+                enum = @namespaced.scan_each(:match => 'zeta:*', :count => 1000)
+                enum.to_a.should =~ matching_namespaced_keys
+              end
+            end
+          end
+          context 'without :match supplied' do
+            context 'when given a block' do
+              it 'should yield unnamespaced' do
+                results = []
+                @namespaced.scan_each(:count => 1000){ |k| results << k }
+                results.should =~ namespaced_keys
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that un-namespaces' do
+                enum = @namespaced.scan_each(:count => 1000)
+                enum.to_a.should =~ namespaced_keys
+              end
+            end
+          end
+        end if Redis.current.respond_to?(:scan_each)
+      end
+
+      context 'hash scan methods' do
+        before(:each) do
+          @redis.mapped_hmset('hsh', {'zeta:wrong:one' => 'WRONG', 'wrong:two' => 'WRONG'})
+          @redis.mapped_hmset('ns:hsh', hash)
+        end
+        let(:hash) do
+          {'zeta:one' => 'OK', 'zeta:two' => 'OK', 'three' => 'OKAY'}
+        end
+        let(:hash_matching_subset) do
+          # select is not consistent from 1.8.7 -> 1.9.2 :(
+          hash.reject {|k,v| !k[/\Azeta:/] }
+        end
+        context '#hscan' do
+          context 'when supplied :match' do
+            it 'should retrieve the proper keys' do
+              _, results = @namespaced.hscan('hsh', 0, :match => 'zeta:*')
+              results.should =~ hash_matching_subset.to_a
+            end
+          end
+          context 'without :match supplied' do
+            it 'should retrieve all hash keys' do
+              _, results = @namespaced.hscan('hsh', 0)
+              results.should =~ @redis.hgetall('ns:hsh').to_a
+            end
+          end
+        end if Redis.current.respond_to?(:hscan)
+
+        context '#hscan_each' do
+          context 'when :match supplied' do
+            context 'when given a block' do
+              it 'should yield the correct hash keys unchanged' do
+                results = []
+                @namespaced.hscan_each('hsh', :match => 'zeta:*', :count => 1000) { |kv| results << kv}
+                results.should =~ hash_matching_subset.to_a
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that yields the correct hash keys unchanged' do
+                enum = @namespaced.hscan_each('hsh', :match => 'zeta:*', :count => 1000)
+                enum.to_a.should =~ hash_matching_subset.to_a
+              end
+            end
+          end
+          context 'without :match supplied' do
+            context 'when given a block' do
+              it 'should yield all hash keys unchanged' do
+                results = []
+                @namespaced.hscan_each('hsh', :count => 1000){ |k| results << k }
+                results.should =~ hash.to_a
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that yields all keys unchanged' do
+                enum = @namespaced.hscan_each('hsh', :count => 1000)
+                enum.to_a.should =~ hash.to_a
+              end
+            end
+          end
+        end if Redis.current.respond_to?(:hscan_each)
+      end
+
+      context 'set scan methods' do
+        before(:each) do
+          set.each { |elem| @namespaced.sadd('set', elem) }
+          @redis.sadd('set', 'WRONG')
+        end
+        let(:set) do
+          %w(zeta:one zeta:two three)
+        end
+        let(:matching_subset) do
+          set.select { |e| e[/\Azeta:/] }
+        end
+
+        context '#sscan' do
+          context 'when supplied :match' do
+            it 'should retrieve the matching set members from the proper set' do
+              _, results = @namespaced.sscan('set', 0, :match => 'zeta:*', :count => 1000)
+              results.should =~ matching_subset
+            end
+          end
+          context 'without :match supplied' do
+            it 'should retrieve all set members from the proper set' do
+              _, results = @namespaced.sscan('set', 0, :count => 1000)
+              results.should =~ set
+            end
+          end
+        end if Redis.current.respond_to?(:sscan)
+
+        context '#sscan_each' do
+          context 'when :match supplied' do
+            context 'when given a block' do
+              it 'should yield the correct hset elements unchanged' do
+                results = []
+                @namespaced.sscan_each('set', :match => 'zeta:*', :count => 1000) { |kv| results << kv}
+                results.should =~ matching_subset
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that yields the correct set elements unchanged' do
+                enum = @namespaced.sscan_each('set', :match => 'zeta:*', :count => 1000)
+                enum.to_a.should =~ matching_subset
+              end
+            end
+          end
+          context 'without :match supplied' do
+            context 'when given a block' do
+              it 'should yield all set elements unchanged' do
+                results = []
+                @namespaced.sscan_each('set', :count => 1000){ |k| results << k }
+                results.should =~ set
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that yields all set elements unchanged' do
+                enum = @namespaced.sscan_each('set', :count => 1000)
+                enum.to_a.should =~ set
+              end
+            end
+          end
+        end if Redis.current.respond_to?(:sscan_each)
+      end
+
+      context 'zset scan methods' do
+        before(:each) do
+          hash.each {|member, score| @namespaced.zadd('zset', score, member)}
+          @redis.zadd('zset', 123.45, 'WRONG')
+        end
+        let(:hash) do
+          {'zeta:one' => 1, 'zeta:two' => 2, 'three' => 3}
+        end
+        let(:hash_matching_subset) do
+          # select is not consistent from 1.8.7 -> 1.9.2 :(
+          hash.reject {|k,v| !k[/\Azeta:/] }
+        end
+        context '#zscan' do
+          context 'when supplied :match' do
+            it 'should retrieve the matching set elements and their scores' do
+              results = []
+              @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000) { |ms| results << ms }
+              results.should =~ hash_matching_subset.to_a
+            end
+          end
+          context 'without :match supplied' do
+            it 'should retrieve all set elements and their scores' do
+              results = []
+              @namespaced.zscan_each('zset', :count => 1000) { |ms| results << ms }
+              results.should =~ hash.to_a
+            end
+          end
+        end if Redis.current.respond_to?(:zscan)
+
+        context '#zscan_each' do
+          context 'when :match supplied' do
+            context 'when given a block' do
+              it 'should yield the correct set elements and scores unchanged' do
+                results = []
+                @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000) { |ms| results << ms}
+                results.should =~ hash_matching_subset.to_a
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that yields the correct set elements and scoresunchanged' do
+                enum = @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000)
+                enum.to_a.should =~ hash_matching_subset.to_a
+              end
+            end
+          end
+          context 'without :match supplied' do
+            context 'when given a block' do
+              it 'should yield all set elements and scores unchanged' do
+                results = []
+                @namespaced.zscan_each('zset', :count => 1000){ |ms| results << ms }
+                results.should =~ hash.to_a
+              end
+            end
+            context 'without a block' do
+              it 'should return an Enumerator that yields all set elements and scores unchanged' do
+                enum = @namespaced.zscan_each('zset', :count => 1000)
+                enum.to_a.should =~ hash.to_a
+              end
+            end
+          end
+        end if Redis.current.respond_to?(:zscan_each)
+      end
+    end
+  end
+
   # Only test aliasing functionality for Redis clients that support aliases.
   unless Redis::Namespace::ALIASES.empty?
     it "should support command aliases (delete)" do
