@@ -42,6 +42,8 @@ class Redis
     #       a Hash; forces second arg's :get to be an Array if present.
     #   :eval_style
     #     Add namespace to each element in keys argument (via options hash or multi-args)
+    #   :scan_style
+    #     Add namespace to :match option, or supplies "#{namespace}:*" if not present.
     #
     # The second element in the value array describes how to modify
     # the return value of the Redis call. It can be one of:
@@ -93,6 +95,8 @@ class Redis
       "hexists"          => [ :first ],
       "hlen"             => [ :first ],
       "hkeys"            => [ :first ],
+      "hscan"            => [ :first ],
+      "hscan_each"       => [ :first ],
       "hvals"            => [ :first ],
       "hgetall"          => [ :first ],
       "incr"             => [ :first ],
@@ -143,6 +147,8 @@ class Redis
       "sadd"             => [ :first ],
       "save"             => [],
       "scard"            => [ :first ],
+      "scan"             => [ :scan_style, :second ],
+      "scan_each"        => [ :scan_style, :all ],
       "sdiff"            => [ :all ],
       "sdiffstore"       => [ :all ],
       "select"           => [],
@@ -162,6 +168,8 @@ class Redis
       "spop"             => [ :first ],
       "srandmember"      => [ :first ],
       "srem"             => [ :first ],
+      "sscan"            => [ :first ],
+      "sscan_each"       => [ :first ],
       "strlen"           => [ :first ],
       "subscribe"        => [ :all ],
       "sunion"           => [ :all ],
@@ -184,11 +192,16 @@ class Redis
       "zrevrange"        => [ :first ],
       "zrevrangebyscore" => [ :first ],
       "zrevrank"         => [ :first ],
+      "zscan"            => [ :first ],
+      "zscan_each"       => [ :first ],
       "zscore"           => [ :first ],
       "zunionstore"      => [ :exclude_options ],
       "[]"               => [ :first ],
       "[]="              => [ :first ]
     }
+
+    # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
+    Enumerator = Enumerable::Enumerator unless defined?(::Enumerator)
 
     # support previous versions of redis gem
     ALIASES = case
@@ -324,6 +337,15 @@ class Redis
         else
           args[1] = add_namespace(args[1])
         end
+      when :scan_style
+        options = (args.last.kind_of?(Hash) ? args.pop : {})
+        options[:match] = add_namespace(options.fetch(:match, '*'))
+        args << options
+
+        if block
+          original_block = block
+          block = proc { |key| original_block.call rem_namespace(key) }
+        end
       end
 
       # Dispatch the command to Redis and store the result.
@@ -338,6 +360,8 @@ class Redis
         result = rem_namespace(result)
       when :first
         result[0] = rem_namespace(result[0]) if result
+      when :second
+        result[1] = rem_namespace(result[1]) if result
       end
 
       result
@@ -376,6 +400,10 @@ class Redis
         key.map {|k| rem_namespace k}
       when Hash
         Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
+      when Enumerator
+        Enumerator.new do |yielder|
+          key.each { |k| yielder << rem_namespace(k) }
+        end
       else
         key.to_s.sub(/\A#{@namespace}:/, '')
       end
