@@ -22,6 +22,22 @@ describe "redis" do
     @redis.quit
   end
 
+  it "every redis commands should be realized in redis-namespace" do
+
+    r_methods = Redis.public_instance_methods(false) - MonitorMixin.public_instance_methods -
+        [:client, :synchronize, :with_reconnect, :without_reconnect, :connected?] -
+        [:id, :method_missing, :inspect, :_bpop, :_eval, :_scan  ]
+
+    rns_methods = Redis::Namespace::COMMANDS.keys.map{|c|c.to_sym} +
+        Redis::Namespace.public_instance_methods(false)
+
+    do_not_needs = [:slowlog, :sync, :time, :migrate, :subscribed?, :unwatch, :script]
+
+    not_implements = r_methods - rns_methods - do_not_needs
+
+    not_implements.should eq([])
+  end
+
   it "proxies `client` to the client" do
     @namespaced.client.should eq(@redis.client)
   end
@@ -413,14 +429,14 @@ describe "redis" do
 
       it "should namespace eval keys passed in as array args" do
         @namespaced.
-          eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]).
-          should eq(%w[ns:k1 ns:k2])
+            eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]).
+            should eq(%w[ns:k1 ns:k2])
       end
 
       it "should namespace eval keys passed in as hash args" do
         @namespaced.
-          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-          should eq(%w[ns:k1 ns:k2])
+            eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should eq(%w[ns:k1 ns:k2])
       end
 
       context '#evalsha' do
@@ -430,14 +446,14 @@ describe "redis" do
 
         it "should namespace evalsha keys passed in as array args" do
           @namespaced.
-            evalsha(sha, %w[k1 k2], %w[arg1 arg2]).
-            should eq(%w[ns:k1 ns:k2])
+              evalsha(sha, %w[k1 k2], %w[arg1 arg2]).
+              should eq(%w[ns:k1 ns:k2])
         end
 
         it "should namespace evalsha keys passed in as hash args" do
           @namespaced.
-            evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-            should eq(%w[ns:k1 ns:k2])
+              evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+              should eq(%w[ns:k1 ns:k2])
         end
       end
 
@@ -447,12 +463,12 @@ describe "redis" do
 
         it "should namespace eval keys passed in as hash args" do
           nested_namespace.
-          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-          should eq(%w[ns:nest:k1 ns:nest:k2])
+              eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+              should eq(%w[ns:nest:k1 ns:nest:k2])
         end
         it "should namespace evalsha keys passed in as hash args" do
           nested_namespace.evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-            should eq(%w[ns:nest:k1 ns:nest:k2])
+              should eq(%w[ns:nest:k1 ns:nest:k2])
         end
       end
     end
