@@ -421,14 +421,14 @@ describe "redis" do
 
       it "should namespace eval keys passed in as array args" do
         @namespaced.
-            eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]).
-            should eq(%w[ns:k1 ns:k2])
+          eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]).
+          should eq(%w[ns:k1 ns:k2])
       end
 
       it "should namespace eval keys passed in as hash args" do
         @namespaced.
-            eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-            should eq(%w[ns:k1 ns:k2])
+          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+          should eq(%w[ns:k1 ns:k2])
       end
 
       context '#evalsha' do
@@ -438,14 +438,14 @@ describe "redis" do
 
         it "should namespace evalsha keys passed in as array args" do
           @namespaced.
-              evalsha(sha, %w[k1 k2], %w[arg1 arg2]).
-              should eq(%w[ns:k1 ns:k2])
+            evalsha(sha, %w[k1 k2], %w[arg1 arg2]).
+            should eq(%w[ns:k1 ns:k2])
         end
 
         it "should namespace evalsha keys passed in as hash args" do
           @namespaced.
-              evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-              should eq(%w[ns:k1 ns:k2])
+            evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should eq(%w[ns:k1 ns:k2])
         end
       end
 
@@ -455,12 +455,12 @@ describe "redis" do
 
         it "should namespace eval keys passed in as hash args" do
           nested_namespace.
-              eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-              should eq(%w[ns:nest:k1 ns:nest:k2])
+            eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should eq(%w[ns:nest:k1 ns:nest:k2])
         end
         it "should namespace evalsha keys passed in as hash args" do
           nested_namespace.evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
-              should eq(%w[ns:nest:k1 ns:nest:k2])
+            should eq(%w[ns:nest:k1 ns:nest:k2])
         end
       end
     end
