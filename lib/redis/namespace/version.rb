@@ -2,6 +2,6 @@
 
 class Redis
   class Namespace
-    VERSION = '1.4.1'
+    VERSION = '2.0.0.pre.1'
   end
 end

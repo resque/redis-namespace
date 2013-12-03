@@ -123,6 +123,7 @@ class Redis
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],
       "move"             => [ :first ],
+      "multi"            => [],
       "mset"             => [ :alternate ],
       "msetnx"           => [ :alternate ],
       "object"           => [ :exclude_first ],
@@ -149,6 +150,7 @@ class Redis
       "scard"            => [ :first ],
       "scan"             => [ :scan_style, :second ],
       "scan_each"        => [ :scan_style, :all ],
+      "script"           => [],
       "sdiff"            => [ :all ],
       "sdiffstore"       => [ :all ],
       "select"           => [],
@@ -220,10 +222,14 @@ class Redis
       @warning = options[:warning] || false
     end
 
+    def client
+      @redis.client
+    end
+
     # Ruby defines a now deprecated type method so we need to override it here
     # since it will never hit method_missing
     def type(key)
-      method_missing(:type, key)
+      call_with_namespace(:type, key)
     end
 
     alias_method :self_respond_to?, :respond_to?
@@ -244,7 +250,7 @@ class Redis
       if block_given?
         namespaced_block(:multi, &block)
       else
-        method_missing(:multi)
+        call_with_namespace(:multi)
       end
     end
 
@@ -262,14 +268,24 @@ class Redis
     end
 
     def exec
-      method_missing(:exec)
+      call_with_namespace(:exec)
     end
 
     def eval(*args)
-      method_missing(:eval, *args)
+      call_with_namespace(:eval, *args)
     end
 
     def method_missing(command, *args, &block)
+      return super unless respond_to_missing?(command)
+
+      call_with_namespace(command, *args, &block)
+    end
+
+    def respond_to_missing?(command, include_all=false)
+      COMMANDS.include?(command.downcase.to_s) || (include_all && super)
+    end
+
+    def call_with_namespace(command, *args, &block)
       command_for_lookup = command.to_s.downcase
       handling = COMMANDS[command_for_lookup] ||
         COMMANDS[ALIASES[command_for_lookup]]

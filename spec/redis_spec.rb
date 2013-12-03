@@ -342,11 +342,8 @@ describe "redis" do
     @namespaced.respond_to?(:warning=).should == true
   end
 
-  it "should warn against unknown commands if :warning is true" do
-    @namespaced.warning = true
-    capture_stderr {
-      @namespaced.unknown('foo')
-    }.should == "Passing 'unknown' command to redis as is."
+  it "should raise an exception when an unknown command is passed" do
+    expect { @namespaced.unknown('foo') }.to raise_exception NoMethodError
   end
 
   # Redis 2.6 RC reports its version as 2.5.
