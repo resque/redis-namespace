@@ -402,7 +402,7 @@ class Redis
         Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
       when Enumerator
         create_enumerator do |yielder|
-          key.each { |k| yielder << rem_namespace(k) }
+          key.each { |k| yielder.yield rem_namespace(k) }
         end
       else
         key.to_s.sub(/\A#{@namespace}:/, '')
