@@ -414,7 +414,7 @@ class Redis
       # its Generator class, which matches the block syntax of 1.9.x's
       # Enumerator class.
       if defined?(::Enumerable::Enumerator)
-        require 'generator'
+        require 'generator' unless defined?(Generator)
         Generator.new(&block).to_enum
       else
         Enumerator.new(&block)
