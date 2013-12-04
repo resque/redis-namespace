@@ -413,7 +413,7 @@ class Redis
       # Enumerator in 1.8.7 *requires* a single argument, so we need to use
       # its Generator class, which matches the block syntax of 1.9.x's
       # Enumerator class.
-      if Enumerator.method(:new).arity > 0
+      if defined?(::Enumerable::Enumerator)
         require 'generator'
         Generator.new(&block).to_enum
       else
