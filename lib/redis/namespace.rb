@@ -401,11 +401,23 @@ class Redis
       when Hash
         Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
       when Enumerator
-        Enumerator.new do |yielder|
+        create_enumerator do |yielder|
           key.each { |k| yielder << rem_namespace(k) }
         end
       else
         key.to_s.sub(/\A#{@namespace}:/, '')
+      end
+    end
+
+    def create_enumerator(&block)
+      # Enumerator in 1.8.7 *requires* a single argument, so we need to use
+      # its Generator class, which matches the block syntax of 1.9.x's
+      # Enumerator class.
+      if Enumerator.method(:new).arity > 0
+        require 'generator'
+        Generator.new(&block).to_enum
+      else
+        Enumerator.new(&block)
       end
     end
   end
