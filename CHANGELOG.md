@@ -1,3 +1,8 @@
+## 1.4.0
+
+ - Add support for `SCAN` family of commands (`HSCAN`, `SSCAN`, `ZSCAN`)
+ - Add support for redis-rb's `scan_each` method and friends
+
 ## 1.3.2
 
  - Fix #68: Capital commands (e.g. redis.send('GET', 'foo'))
