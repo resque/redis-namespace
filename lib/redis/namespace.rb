@@ -205,13 +205,6 @@ class Redis
     # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
     Enumerator = Enumerable::Enumerator unless defined?(::Enumerator)
 
-    # support previous versions of redis gem
-    ALIASES = case
-              when defined? Redis::Client::ALIASES  then Redis::Client::ALIASES
-              when defined? Redis::ALIASES          then Redis::ALIASES
-              else {}
-              end
-
     attr_writer :namespace
     attr_reader :redis
     attr_accessor :warning
@@ -286,9 +279,7 @@ class Redis
     end
 
     def call_with_namespace(command, *args, &block)
-      command_for_lookup = command.to_s.downcase
-      handling = COMMANDS[command_for_lookup] ||
-        COMMANDS[ALIASES[command_for_lookup]]
+      handling = COMMANDS[command.to_s.downcase]
 
       # redis-namespace does not know how to handle this command.
       # Passing it to @redis as is, where redis-namespace shows

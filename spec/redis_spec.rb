@@ -709,27 +709,4 @@ describe "redis" do
       end
     end
   end
-
-  # Only test aliasing functionality for Redis clients that support aliases.
-  unless Redis::Namespace::ALIASES.empty?
-    it "should support command aliases (delete)" do
-      @namespaced.delete('foo')
-      @redis.should_not have_key('ns:foo')
-    end
-
-    it "should support command aliases (set_add)" do
-      @namespaced.set_add('bar', 'quux')
-      @namespaced.smembers('bar').should include('quux')
-    end
-
-    it "should support command aliases (push_head)" do
-      @namespaced.push_head('bar', 'quux')
-      @redis.llen('ns:bar').should eq(1)
-    end
-
-    it "should support command aliases (zset_add)" do
-      @namespaced.zset_add('bar', 1, 'quux')
-      @redis.zcard('ns:bar').should eq(1)
-    end
-  end
 end
