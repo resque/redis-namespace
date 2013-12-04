@@ -1,3 +1,7 @@
+## 1.4.1
+
+ - Fixed the build for 1.8.7
+
 ## 1.4.0
 
  - Add support for `SCAN` family of commands (`HSCAN`, `SSCAN`, `ZSCAN`)
