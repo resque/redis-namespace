@@ -236,7 +236,7 @@ class Redis
     end
 
     def keys(query = nil)
-      query.nil? ? super("*") : super
+      call_with_namespace(:keys, query || '*')
     end
 
     def multi(&block)
