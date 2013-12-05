@@ -275,7 +275,10 @@ class Redis
     end
 
     def respond_to_missing?(command, include_all=false)
-      super || COMMANDS.include?(command.to_s.downcase)
+      return true if COMMANDS.include?(command.to_s.downcase)
+      return true if defined?(super) && super
+
+      false
     end
 
     def call_with_namespace(command, *args, &block)
