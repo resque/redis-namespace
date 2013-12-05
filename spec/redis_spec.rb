@@ -342,11 +342,8 @@ describe "redis" do
     @namespaced.respond_to?(:warning=).should == true
   end
 
-  it "should warn against unknown commands if :warning is true" do
-    @namespaced.warning = true
-    capture_stderr {
-      @namespaced.unknown('foo')
-    }.should == "Passing 'unknown' command to redis as is."
+  it "should raise an exception when an unknown command is passed" do
+    expect { @namespaced.unknown('foo') }.to raise_exception NoMethodError
   end
 
   # Redis 2.6 RC reports its version as 2.5.
@@ -710,29 +707,6 @@ describe "redis" do
           end
         end if Redis.current.respond_to?(:zscan_each)
       end
-    end
-  end
-
-  # Only test aliasing functionality for Redis clients that support aliases.
-  unless Redis::Namespace::ALIASES.empty?
-    it "should support command aliases (delete)" do
-      @namespaced.delete('foo')
-      @redis.should_not have_key('ns:foo')
-    end
-
-    it "should support command aliases (set_add)" do
-      @namespaced.set_add('bar', 'quux')
-      @namespaced.smembers('bar').should include('quux')
-    end
-
-    it "should support command aliases (push_head)" do
-      @namespaced.push_head('bar', 'quux')
-      @redis.llen('ns:bar').should eq(1)
-    end
-
-    it "should support command aliases (zset_add)" do
-      @namespaced.zset_add('bar', 1, 'quux')
-      @redis.zcard('ns:bar').should eq(1)
     end
   end
 end

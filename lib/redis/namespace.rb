@@ -123,6 +123,7 @@ class Redis
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],
       "move"             => [ :first ],
+      "multi"            => [],
       "mset"             => [ :alternate ],
       "msetnx"           => [ :alternate ],
       "object"           => [ :exclude_first ],
@@ -149,6 +150,7 @@ class Redis
       "scard"            => [ :first ],
       "scan"             => [ :scan_style, :second ],
       "scan_each"        => [ :scan_style, :all ],
+      "script"           => [],
       "sdiff"            => [ :all ],
       "sdiffstore"       => [ :all ],
       "select"           => [],
@@ -203,13 +205,6 @@ class Redis
     # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
     Enumerator = Enumerable::Enumerator unless defined?(::Enumerator)
 
-    # support previous versions of redis gem
-    ALIASES = case
-              when defined? Redis::Client::ALIASES  then Redis::Client::ALIASES
-              when defined? Redis::ALIASES          then Redis::ALIASES
-              else {}
-              end
-
     attr_writer :namespace
     attr_reader :redis
     attr_accessor :warning
@@ -220,10 +215,14 @@ class Redis
       @warning = options[:warning] || false
     end
 
+    def client
+      @redis.client
+    end
+
     # Ruby defines a now deprecated type method so we need to override it here
     # since it will never hit method_missing
     def type(key)
-      method_missing(:type, key)
+      call_with_namespace(:type, key)
     end
 
     alias_method :self_respond_to?, :respond_to?
@@ -237,14 +236,14 @@ class Redis
     end
 
     def keys(query = nil)
-      query.nil? ? super("*") : super
+      call_with_namespace(:keys, query || '*')
     end
 
     def multi(&block)
       if block_given?
         namespaced_block(:multi, &block)
       else
-        method_missing(:multi)
+        call_with_namespace(:multi)
       end
     end
 
@@ -262,17 +261,28 @@ class Redis
     end
 
     def exec
-      method_missing(:exec)
+      call_with_namespace(:exec)
     end
 
     def eval(*args)
-      method_missing(:eval, *args)
+      call_with_namespace(:eval, *args)
     end
 
     def method_missing(command, *args, &block)
-      command_for_lookup = command.to_s.downcase
-      handling = COMMANDS[command_for_lookup] ||
-        COMMANDS[ALIASES[command_for_lookup]]
+      return super unless respond_to_missing?(command)
+
+      call_with_namespace(command, *args, &block)
+    end
+
+    def respond_to_missing?(command, include_all=false)
+      return true if COMMANDS.include?(command.to_s.downcase)
+      return true if defined?(super) && super
+
+      false
+    end
+
+    def call_with_namespace(command, *args, &block)
+      handling = COMMANDS[command.to_s.downcase]
 
       # redis-namespace does not know how to handle this command.
       # Passing it to @redis as is, where redis-namespace shows
