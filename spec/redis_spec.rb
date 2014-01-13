@@ -354,11 +354,40 @@ describe "redis" do
       @namespaced['foo'].should eq('chris')
     end
 
+    it "can change its namespace with a Proc" do
+      @namespaced['foo'].should eq(nil)
+      @namespaced['foo'] = 'chris'
+      @namespaced['foo'].should eq('chris')
+
+      @namespaced.namespace.should eq(:ns)
+      @namespaced.namespace = Proc.new { :spec }
+      @namespaced.namespace.should eq(:spec)
+
+      @namespaced['foo'].should eq(nil)
+      @namespaced['foo'] = 'chris'
+      @namespaced['foo'].should eq('chris')
+    end
+
     it "can accept a temporary namespace" do
       @namespaced.namespace.should eq(:ns)
       @namespaced['foo'].should eq(nil)
 
       @namespaced.namespace(:spec) do |temp_ns|
+        temp_ns.namespace.should eq(:spec)
+        temp_ns['foo'].should eq(nil)
+        temp_ns['foo'] = 'jake'
+        temp_ns['foo'].should eq('jake')
+      end
+
+      @namespaced.namespace.should eq(:ns)
+      @namespaced['foo'].should eq(nil)
+    end
+
+    it "can accept a temporary Proc namespace" do
+      @namespaced.namespace.should eq(:ns)
+      @namespaced['foo'].should eq(nil)
+
+      @namespaced.namespace(Proc.new { :spec }) do |temp_ns|
         temp_ns.namespace.should eq(:spec)
         temp_ns['foo'].should eq(nil)
         temp_ns['foo'] = 'jake'
