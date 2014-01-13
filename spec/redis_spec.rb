@@ -801,4 +801,10 @@ describe "redis" do
     it_should_behave_like "redis with namespace"
   end
 
+  context "with a lambda namespace" do
+    let(:namespace) { Proc.new { :ns } }
+
+    it_should_behave_like "redis with namespace"
+  end
+
 end
