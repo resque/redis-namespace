@@ -10,7 +10,6 @@ platforms :rbx do
   gem 'rubysl-uri'
   gem 'rubysl-timeout'
   gem 'rubysl-zlib'
-  gem 'rubysl-json'
   gem 'rubysl-stringio'
 end
 
