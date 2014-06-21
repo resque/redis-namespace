@@ -184,7 +184,7 @@ class Redis
       "zcard"            => [ :first ],
       "zcount"           => [ :first ],
       "zincrby"          => [ :first ],
-      "zinterstore"      => [ :exclude_options ],
+      "zinterstore"      => [ :first, :second ],
       "zrange"           => [ :first ],
       "zrangebyscore"    => [ :first ],
       "zrank"            => [ :first ],
