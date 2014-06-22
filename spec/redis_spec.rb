@@ -223,6 +223,36 @@ describe "redis" do
     @namespaced.zrevrange('union', 0, -1).should eq(%w( 4 2 3 1 ))
   end
 
+  it "should properly intersect two sorted sets without options" do
+    @namespaced.zadd('food', 1, 'orange')
+    @namespaced.zadd('food', 2, 'banana')
+    @namespaced.zadd('food', 3, 'eggplant')
+
+    @namespaced.zadd('color', 2, 'orange')
+    @namespaced.zadd('color', 3, 'yellow')
+    @namespaced.zadd('color', 4, 'eggplant')
+
+    @namespaced.zinterstore('inter', ['food', 'color'])
+
+    inter_values = @namespaced.zrevrange('inter', 0, -1, :with_scores => true)
+    inter_values.should =~ [['orange', 3.0], ['eggplant', 7.0]]
+  end
+
+  it "should properly intersect two sorted sets with options" do
+    @namespaced.zadd('food', 1, 'orange')
+    @namespaced.zadd('food', 2, 'banana')
+    @namespaced.zadd('food', 3, 'eggplant')
+
+    @namespaced.zadd('color', 2, 'orange')
+    @namespaced.zadd('color', 3, 'yellow')
+    @namespaced.zadd('color', 4, 'eggplant')
+
+    @namespaced.zinterstore('inter', ['food', 'color'], :aggregate => "min")
+
+    inter_values = @namespaced.zrevrange('inter', 0, -1, :with_scores => true)
+    inter_values.should =~ [['orange', 1.0], ['eggplant', 3.0]]
+  end
+
   it "should add namespace to sort" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
