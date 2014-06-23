@@ -82,22 +82,6 @@ describe "redis" do
     @namespaced.lrange('bar',0,-1).should eq(['bar'])
   end
 
-  it 'should be able to use a namespace with brpop' do
-    @redis.rpush('ns:a_list', [1,2,3,4])
-
-    list_key, popped = @namespaced.brpop('a_list', 0.1)
-    list_key.should eq 'a_list'
-    popped.should eq '4'
-  end
-
-  it 'should be able to use a namespace with blpop' do
-    @redis.rpush('ns:a_list', [1,2,3,4])
-
-    list_key, popped = @namespaced.blpop('a_list', 0.1)
-    list_key.should eq 'a_list'
-    popped.should eq '1'
-  end
-
   it 'should be able to use a namespace with getbit' do
     @namespaced.set('foo','bar')
     @namespaced.getbit('foo',1).should eq(1)

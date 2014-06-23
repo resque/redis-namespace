@@ -212,7 +212,12 @@ class Redis
     def initialize(namespace, options = {})
       @namespace = namespace
       @redis = options[:redis] || Redis.current
-      @warning = options[:warning] || false
+      @warning = options.fetch(:warning, true)
+      @deprecations = options.fetch(:deprecations, false)
+    end
+
+    def deprecations?
+      !!(@deprecations)
     end
 
     def client
@@ -227,12 +232,9 @@ class Redis
 
     alias_method :self_respond_to?, :respond_to?
 
+    # emulate Ruby 1.9+ and keep respond_to_missing? logic together.
     def respond_to?(command, include_private=false)
-      if self_respond_to?(command, include_private)
-        true
-      else
-        @redis.respond_to?(command, include_private)
-      end
+      super or respond_to_missing?(command, include_private)
     end
 
     def keys(query = nil)
@@ -269,27 +271,41 @@ class Redis
     end
 
     def method_missing(command, *args, &block)
-      return super unless respond_to_missing?(command)
+      normalized_command = command.to_s.downcase
 
-      call_with_namespace(command, *args, &block)
+      if COMMANDS.include?(normalized_command)
+        call_with_namespace(command, *args, &block)
+      elsif @redis.respond_to?(normalized_command) && !@deprecations
+        # blind passthrough is deprecated and will be removed in 2.0
+        # redis-namespace does not know how to handle this command.
+        # Passing it to @redis as is, where redis-namespace shows
+        # a warning message if @warning is set.
+        if @warning
+          call_site = caller.reject { |l| l.start_with?(__FILE__) }.first
+          warn("Passing '#{command}' command to redis as is (at #{call_site})")
+        end
+        @redis.send(command, *args, &block)
+      else
+        super
+      end
     end
 
     def respond_to_missing?(command, include_all=false)
       return true if COMMANDS.include?(command.to_s.downcase)
-      return true if defined?(super) && super
 
-      false
+      # blind passthrough is deprecated and will be removed in 2.0
+      if @redis.respond_to?(command, include_all) && !@deprecations
+        return true
+      end
+
+      defined?(super) && super
     end
 
     def call_with_namespace(command, *args, &block)
       handling = COMMANDS[command.to_s.downcase]
 
-      # redis-namespace does not know how to handle this command.
-      # Passing it to @redis as is, where redis-namespace shows
-      # a warning message if @warning is set.
       if handling.nil?
-        warn("Passing '#{command}' command to redis as is.") if @warning
-        return @redis.send(command, *args, &block)
+        fail("Redis::Namespace does not know how to handle '#{command}'.")
       end
 
       (before, after) = handling

@@ -11,10 +11,11 @@ $TESTING=true
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'redis/namespace'
 
-def capture_stderr
+def capture_stderr(io = nil)
   require 'stringio'
+  io ||= StringIO.new
   begin
-    original, $stderr = $stderr, StringIO.new
+    original, $stderr = $stderr, io
     yield
   rescue Redis::CommandError 
     # ignore Redis::CommandError for test and
