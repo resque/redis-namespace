@@ -61,7 +61,7 @@ class Redis
       "bitcount"         => [ :first ],
       "bitop"            => [ :exclude_first ],
       "blpop"            => [ :exclude_last, :first ],
-      "brpop"            => [ :exclude_last ],
+      "brpop"            => [ :exclude_last, :first ],
       "brpoplpush"       => [ :exclude_last ],
       "config"           => [],
       "dbsize"           => [],
