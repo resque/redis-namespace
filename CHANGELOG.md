@@ -1,3 +1,9 @@
+## 1.5.0
+
+ - Fix `brpop`
+ - Relax dependency of redis-rb to enable users to use redis-rb 3.1
+ - Add (1.x -> 2.x) deprecations and ability to enforce them before upgrading.
+
 ## 1.4.1
 
  - Fixed the build for 1.8.7
