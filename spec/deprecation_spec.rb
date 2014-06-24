@@ -7,7 +7,7 @@ describe Redis::Namespace do
   # in 2.0; the following tests ensure that we support them
   # until that point, & that we can programatically disable
   # them in the meantime.
-  context 'deprecated 1.x behaviour: blind passthrough' do
+  context 'deprecated 1.x behaviour' do
     let(:redis) { double(Redis) }
     let(:namespaced) do
       Redis::Namespace.new(:ns, options.merge(:redis => redis))
@@ -18,6 +18,11 @@ describe Redis::Namespace do
     subject { namespaced }
 
     its(:deprecations?) { should be_false }
+
+    context('with REDIS_NAMESPACE_DEPRECATIONS') do
+      around(:each) {|e| with_env('REDIS_NAMESPACE_DEPRECATIONS'=>'1', &e) }
+      its(:deprecations?) { should be_true }
+    end
 
     before(:each) do
       allow(redis).to receive(:unhandled) do |*args| 

@@ -26,6 +26,15 @@ def capture_stderr(io = nil)
   end
 end
 
+def with_env(env = {})
+  backup_env = ENV.to_hash.dup
+  ENV.update(env)
+
+  yield
+ensure
+  ENV.replace(backup_env)
+end
+
 RSpec::Matchers.define :have_key do |expected|
   match do |redis|
     redis.exists(expected)

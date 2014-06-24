@@ -213,11 +213,13 @@ class Redis
       @namespace = namespace
       @redis = options[:redis] || Redis.current
       @warning = options.fetch(:warning, true)
-      @deprecations = options.fetch(:deprecations, false)
+      @deprecations = !!options.fetch(:deprecations) do
+                        ENV['REDIS_NAMESPACE_DEPRECATIONS']
+                      end
     end
 
     def deprecations?
-      !!(@deprecations)
+      @deprecations
     end
 
     def client
@@ -275,7 +277,7 @@ class Redis
 
       if COMMANDS.include?(normalized_command)
         call_with_namespace(command, *args, &block)
-      elsif @redis.respond_to?(normalized_command) && !@deprecations
+      elsif @redis.respond_to?(normalized_command) && !deprecations?
         # blind passthrough is deprecated and will be removed in 2.0
         # redis-namespace does not know how to handle this command.
         # Passing it to @redis as is, where redis-namespace shows
@@ -294,7 +296,7 @@ class Redis
       return true if COMMANDS.include?(command.to_s.downcase)
 
       # blind passthrough is deprecated and will be removed in 2.0
-      if @redis.respond_to?(command, include_all) && !@deprecations
+      if @redis.respond_to?(command, include_all) && !deprecations?
         return true
       end
 
