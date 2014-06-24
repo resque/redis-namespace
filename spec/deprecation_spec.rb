@@ -17,11 +17,11 @@ describe Redis::Namespace do
 
     subject { namespaced }
 
-    its(:deprecations?) { should be_false }
+    its(:deprecations?) { should be false }
 
     context('with REDIS_NAMESPACE_DEPRECATIONS') do
       around(:each) {|e| with_env('REDIS_NAMESPACE_DEPRECATIONS'=>'1', &e) }
-      its(:deprecations?) { should be_true }
+      its(:deprecations?) { should be true }
     end
 
     before(:each) do
@@ -33,7 +33,7 @@ describe Redis::Namespace do
     # This behaviour will hold true after the 2.x migration
     context('with deprecations enabled') do
       let(:options) { {:deprecations => true} }
-      its(:deprecations?) { should be_true }
+      its(:deprecations?) { should be true }
 
       context('with an unhandled command') do
         it { should_not respond_to :unhandled }
@@ -49,7 +49,7 @@ describe Redis::Namespace do
     # This behaviour will no longer be available after the 2.x migration
     context('with deprecations disabled') do
       let(:options) { {:deprecations => false} }
-      its(:deprecations?) { should be_false }
+      its(:deprecations?) { should be false }
 
       context('with an an unhandled command') do
         it { should respond_to :unhandled }
