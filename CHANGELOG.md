@@ -2,6 +2,7 @@
 
  - Fix `brpop`
  - Relax dependency of redis-rb to enable users to use redis-rb 3.1
+ - Add support for HyperLogLog family of commands (`PFADD`, `PFCOUNT`, `PFMERGE`)
  - Add (1.x -> 2.x) deprecations and ability to enforce them before upgrading.
 
 ## 1.4.1
