@@ -768,4 +768,24 @@ describe "redis" do
       end
     end
   end
+
+  it 'should namespace pfadd' do
+    5.times { |n| @namespaced.pfadd("pf", n) }
+    @redis.pfcount("ns:pf").should == 5
+  end
+
+  it 'should namespace pfcount' do
+    5.times { |n| @redis.pfadd("ns:pf", n) }
+    @namespaced.pfcount("pf").should == 5
+  end
+
+  it 'should namespace pfmerge' do
+    5.times do |n|
+      @redis.pfadd("ns:pfa", n)
+      @redis.pfadd("ns:pfb", n+5)
+    end
+
+    @namespaced.pfmerge("pfc", "pfa", "pfb")
+    @redis.pfcount("ns:pfc").should == 10
+  end
 end
