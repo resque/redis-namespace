@@ -380,15 +380,46 @@ describe "redis" do
   if @redis_version >= Gem::Version.new("2.5.0")
     describe "redis 2.6 commands" do
       it "should namespace bitcount" do
-        pending "awaiting implementaton of command in redis gem"
+        @redis.set('ns:foo', 'foobar')
+        expect(@namespaced.bitcount('foo')).to eq 26
+        expect(@namespaced.bitcount('foo', 0, 0)).to eq 4
+        expect(@namespaced.bitcount('foo', 1, 1)).to eq 6
+        expect(@namespaced.bitcount('foo', 3, 5)).to eq 10
       end
 
       it "should namespace bitop" do
-        pending "awaiting implementaton of command in redis gem"
+        # pending "awaiting implementaton of command in redis gem"
+
+        @redis.set("ns:foo", "a")
+        @redis.set("ns:bar", "b")
+
+        @namespaced.bitop(:and, "foo&bar", "foo", "bar")
+        @namespaced.bitop(:or, "foo|bar", "foo", "bar")
+        @namespaced.bitop(:xor, "foo^bar", "foo", "bar")
+        @namespaced.bitop(:not, "~foo", "foo")
+
+        expect(@redis.get("ns:foo&bar")).to eq "\x60"
+        expect(@redis.get("ns:foo|bar")).to eq "\x63"
+        expect(@redis.get("ns:foo^bar")).to eq "\x03"
+        expect(@redis.get("ns:~foo")).to eq "\x9E"
       end
 
-      it "should namespace dump" do
-        pending "awaiting implementaton of command in redis gem"
+      it "should namespace dump and restore" do
+        @redis.set("ns:foo", "a")
+        v = @namespaced.dump("foo")
+        @redis.del("ns:foo")
+
+        expect(@namespaced.restore("foo", 1000, v)).to be_true
+        expect(@redis.get("ns:foo")).to eq 'a'
+        expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
+
+        @redis.rpush("ns:bar", %w(b c d))
+        w = @namespaced.dump("bar")
+        @redis.del("ns:bar")
+
+        expect(@namespaced.restore("bar", 1000, w)).to be_true
+        expect(@redis.lrange('ns:bar', 0, -1)).to eq %w(b c d)
+        expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
       end
 
       it "should namespace hincrbyfloat" do
@@ -432,10 +463,6 @@ describe "redis" do
         @namespaced.set('mykey', 'Hello')
         @namespaced.expire('mykey', 1)
         @namespaced.pttl('mykey').should >= 0
-      end
-
-      it "should namespace restore" do
-        pending "awaiting implementaton of command in redis gem"
       end
 
       it "should namespace eval keys passed in as array args" do
