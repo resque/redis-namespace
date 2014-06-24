@@ -388,20 +388,20 @@ describe "redis" do
       end
 
       it "should namespace bitop" do
-        # pending "awaiting implementaton of command in redis gem"
+        try_encoding('UTF-8') do
+          @redis.set("ns:foo", "a")
+          @redis.set("ns:bar", "b")
 
-        @redis.set("ns:foo", "a")
-        @redis.set("ns:bar", "b")
+          @namespaced.bitop(:and, "foo&bar", "foo", "bar")
+          @namespaced.bitop(:or, "foo|bar", "foo", "bar")
+          @namespaced.bitop(:xor, "foo^bar", "foo", "bar")
+          @namespaced.bitop(:not, "~foo", "foo")
 
-        @namespaced.bitop(:and, "foo&bar", "foo", "bar")
-        @namespaced.bitop(:or, "foo|bar", "foo", "bar")
-        @namespaced.bitop(:xor, "foo^bar", "foo", "bar")
-        @namespaced.bitop(:not, "~foo", "foo")
-
-        expect(@redis.get("ns:foo&bar")).to eq "\x60"
-        expect(@redis.get("ns:foo|bar")).to eq "\x63"
-        expect(@redis.get("ns:foo^bar")).to eq "\x03"
-        expect(@redis.get("ns:~foo")).to eq "\x9E"
+          expect(@redis.get("ns:foo&bar")).to eq "\x60"
+          expect(@redis.get("ns:foo|bar")).to eq "\x63"
+          expect(@redis.get("ns:foo^bar")).to eq "\x03"
+          expect(@redis.get("ns:~foo")).to eq "\x9E"
+        end
       end
 
       it "should namespace dump and restore" do
