@@ -264,7 +264,7 @@ class Redis
                                    :redis => @redis)
       end
 
-      @namespace
+      @namespace.respond_to?(:call) ? @namespace.call : @namespace
     end
 
     def exec
@@ -419,7 +419,7 @@ class Redis
       when Hash
         Hash[*key.map {|k, v| [ add_namespace(k), v ]}.flatten]
       else
-        "#{@namespace}:#{key}"
+        "#{namespace}:#{key}"
       end
     end
 
@@ -436,7 +436,7 @@ class Redis
           key.each { |k| yielder.yield rem_namespace(k) }
         end
       else
-        key.to_s.sub(/\A#{@namespace}:/, '')
+        key.to_s.sub(/\A#{namespace}:/, '')
       end
     end
 
