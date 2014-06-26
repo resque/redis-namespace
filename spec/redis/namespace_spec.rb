@@ -1,13 +1,13 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Redis::Namespace do
-  let(:namespaced_redis) { Redis::Namespace.new(namespace, redis: double) }
+  let(:namespaced_redis) { Redis::Namespace.new(namespace, :redis => double) }
 
   describe "#namespace" do
     subject { namespaced_redis.namespace }
 
     context "with a callable namespace" do
-      let(:namespace) { double(call: "the callable result") }
+      let(:namespace) { double(:call => "the callable result") }
 
       it { should == "the callable result" }
     end
