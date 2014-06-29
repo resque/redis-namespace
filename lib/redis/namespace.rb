@@ -401,13 +401,14 @@ class Redis
   private
 
     def namespaced_block(command, &block)
-      original = @redis
-      result = redis.send(command) do |r|
-        @redis = r
-        yield self
+      redis.send(command) do |r|
+        begin
+          original, @redis = @redis, r
+          yield self
+        ensure
+          @redis = original
+        end
       end
-      @redis = original
-      result
     end
 
     def add_namespace(key)
