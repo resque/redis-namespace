@@ -18,10 +18,16 @@ describe Redis::Namespace do
     subject { namespaced }
 
     its(:deprecations?) { should be false }
+    its(:warning?) { should be true }
 
     context('with REDIS_NAMESPACE_DEPRECATIONS') do
       around(:each) {|e| with_env('REDIS_NAMESPACE_DEPRECATIONS'=>'1', &e) }
       its(:deprecations?) { should be true }
+    end
+
+    context('with REDIS_NAMESPACE_QUIET') do
+      around(:each) {|e| with_env('REDIS_NAMESPACE_QUIET'=>'1', &e) }
+      its(:warning?) { should be false }
     end
 
     before(:each) do
@@ -72,6 +78,17 @@ describe Redis::Namespace do
           expect(warning).to_not be_empty
           expect(warning).to include %q(Passing 'unhandled' command to redis as is)
           expect(warning).to include __FILE__
+        end
+
+        context('and warnings disabled') do
+          let(:options) { super().merge(:warning => false)}
+          it 'does not warn' do
+            capture_stderr(stderr = StringIO.new) do
+              namespaced.unhandled('bar')
+            end
+            warning = stderr.tap(&:rewind).read
+            expect(warning).to be_empty
+          end
         end
       end
     end

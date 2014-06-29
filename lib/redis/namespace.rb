@@ -216,7 +216,9 @@ class Redis
     def initialize(namespace, options = {})
       @namespace = namespace
       @redis = options[:redis] || Redis.current
-      @warning = options.fetch(:warning, true)
+      @warning = !!options.fetch(:warning) do
+                   !ENV['REDIS_NAMESPACE_QUIET']
+                 end
       @deprecations = !!options.fetch(:deprecations) do
                         ENV['REDIS_NAMESPACE_DEPRECATIONS']
                       end
@@ -224,6 +226,10 @@ class Redis
 
     def deprecations?
       @deprecations
+    end
+
+    def warning?
+      @warning
     end
 
     def client
@@ -286,7 +292,7 @@ class Redis
         # redis-namespace does not know how to handle this command.
         # Passing it to @redis as is, where redis-namespace shows
         # a warning message if @warning is set.
-        if @warning
+        if warning?
           call_site = caller.reject { |l| l.start_with?(__FILE__) }.first
           warn("Passing '#{command}' command to redis as is; blind " +
                "passthrough has been deprecated and will be removed in " +
