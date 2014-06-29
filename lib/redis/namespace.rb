@@ -182,6 +182,7 @@ class Redis
       "ttl"              => [ :first ],
       "type"             => [ :first ],
       "unsubscribe"      => [ :all ],
+      "unwatch"          => [ :all ],
       "watch"            => [ :all ],
       "zadd"             => [ :first ],
       "zcard"            => [ :first ],
