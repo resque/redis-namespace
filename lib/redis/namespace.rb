@@ -288,7 +288,9 @@ class Redis
         # a warning message if @warning is set.
         if @warning
           call_site = caller.reject { |l| l.start_with?(__FILE__) }.first
-          warn("Passing '#{command}' command to redis as is (at #{call_site})")
+          warn("Passing '#{command}' command to redis as is; blind " +
+               "passthrough has been deprecated and will be removed in " +
+               "redis-namespace 2.0 (at #{call_site})")
         end
         @redis.send(command, *args, &block)
       else
