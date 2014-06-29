@@ -304,6 +304,11 @@ class Redis
       end
     end
 
+    def inspect
+      "<#{self.class.name} v#{VERSION} with client v#{Redis::VERSION} "\
+      "for #{@redis.id}/#{@namespace}>"
+    end
+
     def respond_to_missing?(command, include_all=false)
       return true if COMMANDS.include?(command.to_s.downcase)
 
