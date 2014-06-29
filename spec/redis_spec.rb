@@ -12,7 +12,7 @@ describe "redis" do
 
   before(:each) do
     @namespaced = Redis::Namespace.new(:ns, :redis => @redis)
-    @namespaced.flushdb
+    @redis.flushdb
     @redis['foo'] = 'bar'
   end
 
@@ -481,7 +481,7 @@ describe "redis" do
 
       context '#evalsha' do
         let!(:sha) do
-          @namespaced.script(:load, "return {KEYS[1], KEYS[2]}")
+          @redis.script(:load, "return {KEYS[1], KEYS[2]}")
         end
 
         it "should namespace evalsha keys passed in as array args" do
@@ -499,7 +499,7 @@ describe "redis" do
 
       context "in a nested namespace" do
         let(:nested_namespace) { Redis::Namespace.new(:nest, :redis => @namespaced) }
-        let(:sha) { nested_namespace.script(:load, "return {KEYS[1], KEYS[2]}") }
+        let(:sha) { @redis.script(:load, "return {KEYS[1], KEYS[2]}") }
 
         it "should namespace eval keys passed in as hash args" do
           nested_namespace.

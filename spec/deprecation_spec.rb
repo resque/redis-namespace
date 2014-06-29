@@ -34,6 +34,7 @@ describe Redis::Namespace do
       allow(redis).to receive(:unhandled) do |*args| 
         "unhandled(#{args.inspect})"
       end
+      allow(redis).to receive(:flushdb).and_return("OK")
     end
 
     # This behaviour will hold true after the 2.x migration
@@ -47,6 +48,16 @@ describe Redis::Namespace do
         it('raises a NoMethodError') do
           expect do
             namespaced.unhandled('foo')
+          end.to raise_exception NoMethodError
+        end
+      end
+
+      context('with an administrative command') do
+        it { should_not respond_to :flushdb }
+
+        it('raises a NoMethodError') do
+          expect do
+            namespaced.flushdb
           end.to raise_exception NoMethodError
         end
       end
@@ -77,6 +88,7 @@ describe Redis::Namespace do
 
           expect(warning).to_not be_empty
           expect(warning).to include %q(Passing 'unhandled' command to redis as is)
+          expect(warning).to include %q(blind passthrough)
           expect(warning).to include __FILE__
         end
 
@@ -87,8 +99,28 @@ describe Redis::Namespace do
               namespaced.unhandled('bar')
             end
             warning = stderr.tap(&:rewind).read
+
             expect(warning).to be_empty
           end
+        end
+      end
+
+      context('with an administrative command') do
+        it { should respond_to :flushdb }
+        it 'processes the command' do
+          expect(redis).to receive(:flushdb)
+          capture_stderr { namespaced.flushdb }
+        end
+        it 'warns with helpful output' do
+          capture_stderr(stderr = StringIO.new) do
+            namespaced.flushdb
+          end
+          warning = stderr.tap(&:rewind).read
+
+          expect(warning).to_not be_empty
+          expect(warning).to include %q(Passing 'flushdb' command to redis as is)
+          expect(warning).to include %q(administrative)
+          expect(warning).to include __FILE__
         end
       end
     end

@@ -3,7 +3,7 @@ require 'redis/namespace/version'
 
 class Redis
   class Namespace
-    # The following table defines how input parameters and result
+    # The following tables define how input parameters and result
     # values should be modified for the namespace.
     #
     # COMMANDS is a hash. Each key is the name of a command and each
@@ -53,33 +53,23 @@ class Redis
     #   :all
     #     Add the namespace to all elements returned, e.g.
     #       key1 key2 => namespace:key1 namespace:key2
-    COMMANDS = {
+    NAMESPACED_COMMANDS = {
       "append"           => [:first],
-      "auth"             => [],
-      "bgrewriteaof"     => [],
-      "bgsave"           => [],
       "bitcount"         => [ :first ],
       "bitop"            => [ :exclude_first ],
       "blpop"            => [ :exclude_last, :first ],
       "brpop"            => [ :exclude_last, :first ],
       "brpoplpush"       => [ :exclude_last ],
-      "config"           => [],
-      "dbsize"           => [],
       "debug"            => [ :exclude_first ],
       "decr"             => [ :first ],
       "decrby"           => [ :first ],
       "del"              => [ :all   ],
-      "discard"          => [],
       "dump"             => [ :first ],
-      "echo"             => [],
       "exists"           => [ :first ],
       "expire"           => [ :first ],
       "expireat"         => [ :first ],
       "eval"             => [ :eval_style ],
       "evalsha"          => [ :eval_style ],
-      "exec"             => [],
-      "flushall"         => [],
-      "flushdb"          => [],
       "get"              => [ :first ],
       "getbit"           => [ :first ],
       "getrange"         => [ :first ],
@@ -102,9 +92,7 @@ class Redis
       "incr"             => [ :first ],
       "incrby"           => [ :first ],
       "incrbyfloat"      => [ :first ],
-      "info"             => [],
       "keys"             => [ :first, :all ],
-      "lastsave"         => [],
       "lindex"           => [ :first ],
       "linsert"          => [ :first ],
       "llen"             => [ :first ],
@@ -123,7 +111,6 @@ class Redis
       "mget"             => [ :all ],
       "monitor"          => [ :monitor ],
       "move"             => [ :first ],
-      "multi"            => [],
       "mset"             => [ :alternate ],
       "msetnx"           => [ :alternate ],
       "object"           => [ :exclude_first ],
@@ -133,14 +120,11 @@ class Redis
       "pfadd"            => [ :first ],
       "pfcount"          => [ :all ],
       "pfmerge"          => [ :all ],
-      "ping"             => [],
       "psetex"           => [ :first ],
       "psubscribe"       => [ :all ],
       "pttl"             => [ :first ],
       "publish"          => [ :first ],
       "punsubscribe"     => [ :all ],
-      "quit"             => [],
-      "randomkey"        => [],
       "rename"           => [ :all ],
       "renamenx"         => [ :all ],
       "restore"          => [ :first ],
@@ -149,24 +133,19 @@ class Redis
       "rpush"            => [ :first ],
       "rpushx"           => [ :first ],
       "sadd"             => [ :first ],
-      "save"             => [],
       "scard"            => [ :first ],
       "scan"             => [ :scan_style, :second ],
       "scan_each"        => [ :scan_style, :all ],
-      "script"           => [],
       "sdiff"            => [ :all ],
       "sdiffstore"       => [ :all ],
-      "select"           => [],
       "set"              => [ :first ],
       "setbit"           => [ :first ],
       "setex"            => [ :first ],
       "setnx"            => [ :first ],
       "setrange"         => [ :first ],
-      "shutdown"         => [],
       "sinter"           => [ :all ],
       "sinterstore"      => [ :all ],
       "sismember"        => [ :first ],
-      "slaveof"          => [],
       "smembers"         => [ :first ],
       "smove"            => [ :exclude_last ],
       "sort"             => [ :sort  ],
@@ -182,8 +161,6 @@ class Redis
       "ttl"              => [ :first ],
       "type"             => [ :first ],
       "unsubscribe"      => [ :all ],
-      "unwatch"          => [ :all ],
-      "watch"            => [ :all ],
       "zadd"             => [ :first ],
       "zcard"            => [ :first ],
       "zcount"           => [ :first ],
@@ -205,6 +182,46 @@ class Redis
       "[]"               => [ :first ],
       "[]="              => [ :first ]
     }
+    TRANSACTION_COMMANDS = {
+      "discard"          => [],
+      "exec"             => [],
+      "multi"            => [],
+      "unwatch"          => [ :all ],
+      "watch"            => [ :all ],
+    }
+    HELPER_COMMANDS = {
+      "auth"             => [],
+      "echo"             => [],
+      "ping"             => [],
+    }
+    ADMINISTRATIVE_COMMANDS = {
+      "bgrewriteaof"     => [],
+      "bgsave"           => [],
+      "config"           => [],
+      "dbsize"           => [],
+      "flushall"         => [],
+      "flushdb"          => [],
+      "info"             => [],
+      "lastsave"         => [],
+      "quit"             => [],
+      "randomkey"        => [],
+      "save"             => [],
+      "script"           => [],
+      "select"           => [],
+      "shutdown"         => [],
+      "slaveof"          => [],
+    }
+
+    DEPRECATED_COMMANDS = [
+      ADMINISTRATIVE_COMMANDS
+    ].compact.reduce(:merge)
+
+    COMMANDS = [
+      NAMESPACED_COMMANDS,
+      TRANSACTION_COMMANDS,
+      HELPER_COMMANDS,
+      ADMINISTRATIVE_COMMANDS,
+    ].compact.reduce(:merge)
 
     # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
     Enumerator = Enumerable::Enumerator unless defined?(::Enumerator)
@@ -285,7 +302,20 @@ class Redis
     def method_missing(command, *args, &block)
       normalized_command = command.to_s.downcase
 
-      if COMMANDS.include?(normalized_command)
+      if ADMINISTRATIVE_COMMANDS.include?(normalized_command)
+        # administrative commands usage is deprecated and will be removed in 2.0
+        # redis-namespace cannot safely apply a namespace to their effects.
+        return super if deprecations?
+        if warning?
+          warn("Passing '#{normalized_command}' command to redis as is; " +
+               "administrative commands cannot be effectively namespaced " +
+               "and should be called on the redis connection directly; " +
+               "passthrough has been deprecated and will be removed in " +
+               "redis-namespace 2.0 (at #{call_site})"
+               )
+        end
+        call_with_namespace(command, *args, &block)
+      elsif COMMANDS.include?(normalized_command)
         call_with_namespace(command, *args, &block)
       elsif @redis.respond_to?(normalized_command) && !deprecations?
         # blind passthrough is deprecated and will be removed in 2.0
@@ -293,7 +323,6 @@ class Redis
         # Passing it to @redis as is, where redis-namespace shows
         # a warning message if @warning is set.
         if warning?
-          call_site = caller.reject { |l| l.start_with?(__FILE__) }.first
           warn("Passing '#{command}' command to redis as is; blind " +
                "passthrough has been deprecated and will be removed in " +
                "redis-namespace 2.0 (at #{call_site})")
@@ -310,14 +339,18 @@ class Redis
     end
 
     def respond_to_missing?(command, include_all=false)
-      return true if COMMANDS.include?(command.to_s.downcase)
+      normalized_command = command.to_s.downcase
 
-      # blind passthrough is deprecated and will be removed in 2.0
-      if @redis.respond_to?(command, include_all) && !deprecations?
-        return true
+      case
+      when DEPRECATED_COMMANDS.include?(normalized_command)
+        !deprecations?
+      when COMMANDS.include?(normalized_command)
+        true
+      when !deprecations? && redis.respond_to?(command, include_all)
+        true
+      else
+        defined?(super) && super
       end
-
-      defined?(super) && super
     end
 
     def call_with_namespace(command, *args, &block)
@@ -413,6 +446,10 @@ class Redis
     end
 
   private
+
+    def call_site
+      caller.reject { |l| l.start_with?(__FILE__) }.first
+    end
 
     def namespaced_block(command, &block)
       redis.send(command) do |r|
