@@ -99,7 +99,7 @@ While there are many authors who have contributed to this project, the following
  - Ryan Biesemeyer (@yaauie)
  - Steve Klabnik (@steveklabnik)
  - Terence Lee (@hone)
- - Eoin Coffey (@ecoffey
+ - Eoin Coffey (@ecoffey)
 
 [redis]: http://redis.io
 [redis-rb]: https://github.com/redis/redis-rb
