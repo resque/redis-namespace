@@ -1,3 +1,8 @@
+## 1.5.1
+
+ - Add support for `UNWATCH` command
+ - Add support for `REDIS_NAMESPACE_QUIET` environment variable
+
 ## 1.5.0
 
  - Fix `brpop`
