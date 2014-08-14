@@ -64,10 +64,10 @@ If you come across a command that is not yet supported, please open an issue on 
 Administrative Commands
 -----------------------
 The effects of some redis commands cannot be limited to a particular namespace (e.g., `FLUSHALL`, which literally truncates all databases in your redis server, regardless of keyspace).
-Historically, this has meant that Redis::Namespace intentionally passes administrative commands on to the underlying redis connection without mofification, which can lead to surprising effects.
+Historically, this has meant that Redis::Namespace intentionally passes administrative commands on to the underlying redis connection without modification, which can lead to surprising effects.
 
 As of v1.6.0, the direct use of administrative commands has been deprecated, and the functionality will be removed entirely in 2.0;
-while such commands are often useful for testing or administration, their meaning is inherently hidden when placed behind an interace that implies it will namespace everything.
+while such commands are often useful for testing or administration, their meaning is inherently hidden when placed behind an interface that implies it will namespace everything.
 
 The prefered way to send an administrative command is on the redis connection
 itself, which is publicly exposed as `Redis::Namespace#redis`:
