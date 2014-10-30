@@ -144,6 +144,12 @@ describe "redis" do
     @namespaced.get('virgin_key').should eq(@namespaced.getrange('virgin_key',0,-1))
   end
 
+  it 'should be able to use a namespace with bitpos' do
+    @namespaced.setbit('bit_map', 42, 1)
+    @namespaced.bitpos('bit_map', 0).should eq(0)
+    @namespaced.bitpos('bit_map', 1).should eq(42)
+  end
+
   it 'should be able to use a namespace with setrange' do
     @namespaced.setrange('foo', 0, 'bar')
     @namespaced.get('foo').should eq('bar')
