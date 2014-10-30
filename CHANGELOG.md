@@ -1,3 +1,7 @@
+## master
+
+ - Add support for `BITPOS` command
+
 ## 1.6.0
 
  - Support redis-rb 4.0.0

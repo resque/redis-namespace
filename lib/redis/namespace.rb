@@ -57,6 +57,7 @@ class Redis
       "append"           => [ :first ],
       "bitcount"         => [ :first ],
       "bitop"            => [ :exclude_first ],
+      "bitpos"           => [ :first ],
       "blpop"            => [ :exclude_last, :first ],
       "brpop"            => [ :exclude_last, :first ],
       "brpoplpush"       => [ :exclude_last ],
