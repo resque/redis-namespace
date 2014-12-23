@@ -96,6 +96,7 @@ class Redis
       "lindex"           => [ :first ],
       "linsert"          => [ :first ],
       "llen"             => [ :first ],
+      "lock_for_update"  => [ :first ],
       "lpop"             => [ :first ],
       "lpush"            => [ :first ],
       "lpushx"           => [ :first ],
