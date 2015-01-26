@@ -488,7 +488,7 @@ class Redis
           key.each { |k| yielder.yield rem_namespace(k) }
         end
       else
-        key.to_s.sub(/\A#{@namespace}:/, '')
+        key.to_s.force_encoding("BINARY").sub(/\A#{@namespace}:/, '')
       end
     end
 
