@@ -366,6 +366,12 @@ describe "redis" do
     @namespaced['foo'].should eq(nil)
   end
 
+  it "should not throw exception on invalid UTF-8 sequences in keys" do
+    @namespaced.set("f\xFCo", 'bar')
+    @namespaced.set("foo", 'bar')
+    @namespaced.keys.should eq ["f\xFCo", "foo"]
+  end
+
   it "should respond to :namespace=" do
     @namespaced.respond_to?(:namespace=).should eq(true)
   end
