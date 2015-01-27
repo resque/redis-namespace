@@ -369,7 +369,17 @@ describe "redis" do
   it "should not throw exception on invalid UTF-8 sequences in keys" do
     @namespaced.set("f\xFCo", 'bar')
     @namespaced.set("foo", 'bar')
-    @namespaced.keys.should eq ["f\xFCo", "foo"]
+    @namespaced.get("f\xFCo").should eq('bar')
+    keys = @namespaced.keys
+    # force_encoding is not available in ruby 1.8.7
+    if "".respond_to? :force_encoding
+      keys.should eq ["f\xFCo".force_encoding('BINARY'), "foo"]
+    else
+      keys.should eq ["f\xFCo", "foo"]
+    end
+    keys.each do |k|
+      @namespaced.get(k).should eq('bar')
+    end
   end
 
   it "should respond to :namespace=" do

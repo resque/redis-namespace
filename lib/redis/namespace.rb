@@ -488,7 +488,14 @@ class Redis
           key.each { |k| yielder.yield rem_namespace(k) }
         end
       else
-        key.to_s.force_encoding("BINARY").sub(/\A#{@namespace}:/, '')
+        string_key = key.to_s.dup
+        if string_key.respond_to? :force_encoding
+          # force_encoding is not available in ruby 1.8.7
+          rem_key = string_key.force_encoding('BINARY')
+        else
+          rem_key = string_key
+        end
+        rem_key.sub(/\A#{@namespace}:/, '')
       end
     end
 
