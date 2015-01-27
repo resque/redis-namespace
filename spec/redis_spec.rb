@@ -370,12 +370,12 @@ describe "redis" do
     @namespaced.set("f\xFCo", 'bar')
     @namespaced.set("foo", 'bar')
     @namespaced.get("f\xFCo").should eq('bar')
-    keys = @namespaced.keys
+    keys = @namespaced.keys.sort
     # force_encoding is not available in ruby 1.8.7
     if "".respond_to? :force_encoding
-      keys.should eq ["f\xFCo".force_encoding('BINARY'), "foo"]
+      keys.should eq ["f\xFCo".force_encoding('BINARY'), "foo"].sort
     else
-      keys.should eq ["f\xFCo", "foo"]
+      keys.should eq ["f\xFCo", "foo"].sort
     end
     keys.each do |k|
       @namespaced.get(k).should eq('bar')
