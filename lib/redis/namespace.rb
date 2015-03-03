@@ -70,6 +70,7 @@ class Redis
       "decrby"           => [ :first ],
       "del"              => [ :all   ],
       "discard"          => [],
+      "disconnect!"      => [],
       "dump"             => [ :first ],
       "echo"             => [],
       "exists"           => [ :first ],
