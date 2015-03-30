@@ -337,6 +337,12 @@ describe "redis" do
     @namespaced.echo(123).should eq("123")
   end
 
+  it 'should not add namespace to disconnect!' do
+    expect(@redis).to receive(:disconnect!).with().and_call_original
+
+    expect(@namespaced.disconnect!).to be nil
+  end
+
   it "can change its namespace" do
     @namespaced['foo'].should eq(nil)
     @namespaced['foo'] = 'chris'
