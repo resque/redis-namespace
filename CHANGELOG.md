@@ -1,3 +1,7 @@
+## 1.5.2
+
+ - Add support for `disconnect!` method passthrough
+
 ## 1.5.1
 
  - Add support for `UNWATCH` command
