@@ -343,6 +343,12 @@ describe "redis" do
     expect(@namespaced.disconnect!).to be nil
   end
 
+  it 'should not add namespace to subscribed?' do
+    expect(@redis).to receive(:subscribed?).with().and_call_original
+
+    expect(@namespaced.subscribed?).to be false
+  end
+
   it "can change its namespace" do
     @namespaced['foo'].should eq(nil)
     @namespaced['foo'] = 'chris'
