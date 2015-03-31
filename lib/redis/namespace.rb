@@ -194,6 +194,7 @@ class Redis
       "echo"             => [],
       "ping"             => [],
       "disconnect!"      => [],
+      "subscribed?"      => [],
     }
     ADMINISTRATIVE_COMMANDS = {
       "bgrewriteaof"     => [],
