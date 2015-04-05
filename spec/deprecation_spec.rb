@@ -17,17 +17,32 @@ describe Redis::Namespace do
 
     subject { namespaced }
 
-    its(:deprecations?) { should be false }
-    its(:warning?) { should be true }
+    describe '#deprecations?' do
+      subject { super().deprecations? }
+      it { is_expected.to be false }
+    end
+
+    describe '#warning?' do
+      subject { super().warning? }
+      it { is_expected.to be true }
+    end
 
     context('with REDIS_NAMESPACE_DEPRECATIONS') do
       around(:each) {|e| with_env('REDIS_NAMESPACE_DEPRECATIONS'=>'1', &e) }
-      its(:deprecations?) { should be true }
+
+      describe '#deprecations?' do
+        subject { super().deprecations? }
+        it { is_expected.to be true }
+      end
     end
 
     context('with REDIS_NAMESPACE_QUIET') do
       around(:each) {|e| with_env('REDIS_NAMESPACE_QUIET'=>'1', &e) }
-      its(:warning?) { should be false }
+
+      describe '#warning?' do
+        subject { super().warning? }
+        it { is_expected.to be false }
+      end
     end
 
     before(:each) do
@@ -40,10 +55,14 @@ describe Redis::Namespace do
     # This behaviour will hold true after the 2.x migration
     context('with deprecations enabled') do
       let(:options) { {:deprecations => true} }
-      its(:deprecations?) { should be true }
+
+      describe '#deprecations?' do
+        subject { super().deprecations? }
+        it { is_expected.to be true }
+      end
 
       context('with an unhandled command') do
-        it { should_not respond_to :unhandled }
+        it { is_expected.not_to respond_to :unhandled }
 
         it('raises a NoMethodError') do
           expect do
@@ -53,7 +72,7 @@ describe Redis::Namespace do
       end
 
       context('with an administrative command') do
-        it { should_not respond_to :flushdb }
+        it { is_expected.not_to respond_to :flushdb }
 
         it('raises a NoMethodError') do
           expect do
@@ -66,10 +85,14 @@ describe Redis::Namespace do
     # This behaviour will no longer be available after the 2.x migration
     context('with deprecations disabled') do
       let(:options) { {:deprecations => false} }
-      its(:deprecations?) { should be false }
+
+      describe '#deprecations?' do
+        subject { super().deprecations? }
+        it { is_expected.to be false }
+      end
 
       context('with an an unhandled command') do
-        it { should respond_to :unhandled }
+        it { is_expected.to respond_to :unhandled }
 
         it 'blindly passes through' do
           expect(redis).to receive(:unhandled)
@@ -106,7 +129,7 @@ describe Redis::Namespace do
       end
 
       context('with an administrative command') do
-        it { should respond_to :flushdb }
+        it { is_expected.to respond_to :flushdb }
         it 'processes the command' do
           expect(redis).to receive(:flushdb)
           capture_stderr { namespaced.flushdb }
