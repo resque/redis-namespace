@@ -84,6 +84,13 @@ describe "redis" do
     @namespaced.lrange('bar',0,-1).should eq(['bar'])
   end
 
+  it 'should be able to use a namespace with brpoplpush with default timeout' do
+    @namespaced.lpush('foo','bar')
+    @namespaced.brpoplpush('foo','bar').should eq('bar')
+    @namespaced.lrange('foo',0,-1).should eq([])
+    @namespaced.lrange('bar',0,-1).should eq(['bar'])
+  end
+
   it 'should be able to use a namespace with getbit' do
     @namespaced.set('foo','bar')
     @namespaced.getbit('foo',1).should eq(1)

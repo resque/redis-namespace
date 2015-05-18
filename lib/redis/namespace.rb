@@ -59,7 +59,7 @@ class Redis
       "bitop"            => [ :exclude_first ],
       "blpop"            => [ :exclude_last, :first ],
       "brpop"            => [ :exclude_last, :first ],
-      "brpoplpush"       => [ :exclude_last ],
+      "brpoplpush"       => [ :first_two ],
       "debug"            => [ :exclude_first ],
       "decr"             => [ :first ],
       "decrby"           => [ :first ],
@@ -367,6 +367,9 @@ class Redis
       case before
       when :first
         args[0] = add_namespace(args[0]) if args[0]
+      when :first_two
+        args[0] = add_namespace(args[0]) if args[0]
+        args[1] = add_namespace(args[1]) if args[1]
       when :all
         args = add_namespace(args)
       when :exclude_first
