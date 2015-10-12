@@ -366,6 +366,7 @@ class Redis
       # Add the namespace to any parameters that are keys.
       case before
       when :first
+        args.flatten!
         args[0] = add_namespace(args[0]) if args[0]
       when :all
         args = add_namespace(args)
