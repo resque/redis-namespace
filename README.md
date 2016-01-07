@@ -3,7 +3,7 @@ redis-namespace
 
 Redis::Namespace provides an interface to a namespaced subset of your [redis][] keyspace (e.g., keys with a common beginning), and requires the [redis-rb][] gem.
 
-~~~ irb
+``` ruby
 require 'redis-namespace'
 # => true
 
@@ -29,7 +29,7 @@ namespaced_redis.get('foo')
 # => nil
 redis_connection.get('ns:foo')
 # => nil
-~~~
+```
 
 Installation
 ============
@@ -72,10 +72,10 @@ while such commands are often useful for testing or administration, their meanin
 The prefered way to send an administrative command is on the redis connection
 itself, which is publicly exposed as `Redis::Namespace#redis`:
 
-~~~ ruby
+``` ruby
 namespaced.redis.flushall()
 # => "OK"
-~~~
+```
 
 2.x Planned Breaking Changes
 ============================
