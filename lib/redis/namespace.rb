@@ -54,7 +54,7 @@ class Redis
     #     Add the namespace to all elements returned, e.g.
     #       key1 key2 => namespace:key1 namespace:key2
     NAMESPACED_COMMANDS = {
-      "append"           => [:first],
+      "append"           => [ :first ],
       "bitcount"         => [ :first ],
       "bitop"            => [ :exclude_first ],
       "blpop"            => [ :exclude_last, :first ],
@@ -191,9 +191,10 @@ class Redis
     }
     HELPER_COMMANDS = {
       "auth"             => [],
+      "disconnect!"      => [],
       "echo"             => [],
       "ping"             => [],
-      "disconnect!"      => [],
+      "time"             => [],
     }
     ADMINISTRATIVE_COMMANDS = {
       "bgrewriteaof"     => [],
