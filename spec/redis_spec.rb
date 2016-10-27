@@ -485,6 +485,14 @@ describe "redis" do
           should eq(%w[ns:k1 ns:k2])
       end
 
+      it "should namespace eval keys passed in as hash args unmodified" do
+        args = { :keys => %w[k1 k2], :argv => %w[arg1 arg2] }
+        args.freeze
+        @namespaced.
+          eval("return {KEYS[1], KEYS[2]}", args).
+          should eq(%w[ns:k1 ns:k2])
+      end
+
       context '#evalsha' do
         let!(:sha) do
           @redis.script(:load, "return {KEYS[1], KEYS[2]}")
@@ -499,6 +507,14 @@ describe "redis" do
         it "should namespace evalsha keys passed in as hash args" do
           @namespaced.
             evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]).
+            should eq(%w[ns:k1 ns:k2])
+        end
+
+        it "should namespace evalsha keys passed in as hash args unmodified" do
+          args = { :keys => %w[k1 k2], :argv => %w[arg1 arg2] }
+          args.freeze
+          @namespaced.
+            evalsha(sha, args).
             should eq(%w[ns:k1 ns:k2])
         end
       end

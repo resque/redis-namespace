@@ -364,6 +364,15 @@ class Redis
 
       (before, after) = handling
 
+      # Avoid modifying the caller's arguments.
+      args = args.map do |arg|
+        if arg.is_a?(Hash)
+          arg.dup
+        else
+          arg # Some objects (e.g. symbol) can't be dup'd.
+        end
+      end
+
       # Add the namespace to any parameters that are keys.
       case before
       when :first
