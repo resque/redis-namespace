@@ -365,8 +365,10 @@ class Redis
       (before, after) = handling
 
       # Avoid modifying the caller's arguments.
-      args = args.map do |arg|
-        if arg.is_a?(Hash)
+      args.map! do |arg|
+        if arg.is_a?(Array)
+          arg.dup
+        elsif arg.is_a?(Hash)
           arg.dup
         else
           arg # Some objects (e.g. symbol) can't be dup'd.
@@ -478,9 +480,10 @@ class Redis
 
       case key
       when Array
-        key.map {|k| add_namespace k}
+        key.map! {|k| add_namespace k}
       when Hash
-        Hash[*key.map {|k, v| [ add_namespace(k), v ]}.flatten]
+        key.keys.each {|k| key[add_namespace(k)] = key.delete(k)}
+        key
       else
         "#{@namespace}:#{key}"
       end
