@@ -364,16 +364,19 @@ class Redis
 
       (before, after) = handling
 
-      # Avoid modifying the caller's arguments.
-      args.map! do |arg|
+      # Avoid modifying the caller's (pass-by-reference) arguments.
+      def clone_args(arg)
         if arg.is_a?(Array)
-          arg.dup
+          arg.map {|sub_arg| clone_args(sub_arg)}
         elsif arg.is_a?(Hash)
-          arg.dup
+          arg.map {|k, v| [clone_args(k), clone_args(v)]}.to_h
         else
           arg # Some objects (e.g. symbol) can't be dup'd.
         end
       end
+
+      # Modify the local *args array in-place, no need to copy it.
+      args.map! {|arg| clone_args(arg)}
 
       # Add the namespace to any parameters that are keys.
       case before
