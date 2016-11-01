@@ -364,6 +364,9 @@ class Redis
 
       (before, after) = handling
 
+      # Modify the local *args array in-place, no need to copy it.
+      args.map! {|arg| clone_args(arg)}
+
       # Add the namespace to any parameters that are keys.
       case before
       when :first
@@ -449,6 +452,17 @@ class Redis
 
   private
 
+    # Avoid modifying the caller's (pass-by-reference) arguments.
+    def clone_args(arg)
+      if arg.is_a?(Array)
+        arg.map {|sub_arg| clone_args(sub_arg)}
+      elsif arg.is_a?(Hash)
+        Hash[arg.map {|k, v| [clone_args(k), clone_args(v)]}]
+      else
+        arg # Some objects (e.g. symbol) can't be dup'd.
+      end
+    end
+
     def call_site
       caller.reject { |l| l.start_with?(__FILE__) }.first
     end
@@ -469,9 +483,10 @@ class Redis
 
       case key
       when Array
-        key.map {|k| add_namespace k}
+        key.map! {|k| add_namespace k}
       when Hash
-        Hash[*key.map {|k, v| [ add_namespace(k), v ]}.flatten]
+        key.keys.each {|k| key[add_namespace(k)] = key.delete(k)}
+        key
       else
         "#{@namespace}:#{key}"
       end
