@@ -364,17 +364,6 @@ class Redis
 
       (before, after) = handling
 
-      # Avoid modifying the caller's (pass-by-reference) arguments.
-      def clone_args(arg)
-        if arg.is_a?(Array)
-          arg.map {|sub_arg| clone_args(sub_arg)}
-        elsif arg.is_a?(Hash)
-          Hash[arg.map {|k, v| [clone_args(k), clone_args(v)]}]
-        else
-          arg # Some objects (e.g. symbol) can't be dup'd.
-        end
-      end
-
       # Modify the local *args array in-place, no need to copy it.
       args.map! {|arg| clone_args(arg)}
 
@@ -462,6 +451,17 @@ class Redis
     end
 
   private
+
+    # Avoid modifying the caller's (pass-by-reference) arguments.
+    def clone_args(arg)
+      if arg.is_a?(Array)
+        arg.map {|sub_arg| clone_args(sub_arg)}
+      elsif arg.is_a?(Hash)
+        Hash[arg.map {|k, v| [clone_args(k), clone_args(v)]}]
+      else
+        arg # Some objects (e.g. symbol) can't be dup'd.
+      end
+    end
 
     def call_site
       caller.reject { |l| l.start_with?(__FILE__) }.first
