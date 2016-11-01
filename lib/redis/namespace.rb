@@ -369,7 +369,7 @@ class Redis
         if arg.is_a?(Array)
           arg.map {|sub_arg| clone_args(sub_arg)}
         elsif arg.is_a?(Hash)
-          arg.map {|k, v| [clone_args(k), clone_args(v)]}.to_h
+          Hash[arg.map {|k, v| [clone_args(k), clone_args(v)]}]
         else
           arg # Some objects (e.g. symbol) can't be dup'd.
         end
