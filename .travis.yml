@@ -7,6 +7,10 @@ rvm:
   - 1.9.3
   - jruby-18mode
   - jruby-19mode
-  - rbx-2
 services:
   - redis
+matrix:
+  include:
+  - rvm: rbx-3
+    env: RBX_RUBY_COMPAT=2.3.1 RBX_VERSION=3.70
+    os: linux
