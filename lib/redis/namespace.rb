@@ -36,7 +36,7 @@ class Redis
     #       MSET key1 value1 key2 value2 =>
     #       MSET namespace:key1 value1 namespace:key2 value2
     #   :sort
-    #     Add namespace to first argument if it is non-nil
+    #     Add namespace to first argument
     #     Add namespace to second arg's :by and :store if second arg is a Hash
     #     Add namespace to each element in second arg's :get if second arg is
     #       a Hash; forces second arg's :get to be an Array if present.
@@ -370,7 +370,7 @@ class Redis
       # Add the namespace to any parameters that are keys.
       case before
       when :first
-        args[0] = add_namespace(args[0]) if args[0]
+        args[0] = add_namespace(args[0])
       when :all
         args = add_namespace(args)
       when :exclude_first
@@ -392,7 +392,7 @@ class Redis
       when :alternate
         args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
       when :sort
-        args[0] = add_namespace(args[0]) if args[0]
+        args[0] = add_namespace(args[0])
         if args[1].is_a?(Hash)
           [:by, :store].each do |key|
             args[1][key] = add_namespace(args[1][key]) if args[1][key]
@@ -479,7 +479,7 @@ class Redis
     end
 
     def add_namespace(key)
-      return key unless key && @namespace
+      return key unless @namespace
 
       case key
       when Array

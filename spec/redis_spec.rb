@@ -32,6 +32,7 @@ describe "redis" do
     @namespaced['foo'].should eq(nil)
     @namespaced['foo'] = 'chris'
     @namespaced['foo'].should eq('chris')
+    @redis['foo'].should eq('bar')
     @redis['foo'] = 'bob'
     @redis['foo'].should eq('bob')
 
@@ -39,6 +40,17 @@ describe "redis" do
     @namespaced['counter'].to_i.should eq(2)
     @redis['counter'].should eq(nil)
     @namespaced.type('counter').should eq('string')
+  end
+
+  context 'when key is nil' do
+    it 'should still be able to use a namespace' do
+      @namespaced[nil].should eq(nil)
+      @namespaced[nil] = 'chris'
+      @namespaced[nil].should eq('chris')
+      @redis[nil].should eq(nil)
+      @redis[nil] = 'bob'
+      @redis[nil].should eq('bob')
+    end
   end
 
   context 'when sending capital commands (issue 68)' do
