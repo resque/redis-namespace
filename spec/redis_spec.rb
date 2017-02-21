@@ -24,6 +24,14 @@ describe "redis" do
     @redis.quit
   end
 
+  it "every redis commands should be realized in redis-namespace" do
+    r_methods    = Redis.public_instance_methods(false) - MonitorMixin.public_instance_methods -
+        [:client, :synchronize, :with_reconnect, :without_reconnect, :connected?, :id, :method_missing, :inspect, :_bpop, :_eval, :_scan  ]
+    rns_methods  = Redis::Namespace::COMMANDS.keys.map{|c|c.to_sym} + Redis::Namespace.public_instance_methods(false)
+    do_not_needs = [:slowlog, :sync, :time, :migrate, :subscribed?, :unwatch, :script]
+    (r_methods - rns_methods - do_not_needs).should eq([])
+  end
+
   it "proxies `client` to the client" do
     @namespaced.client.should eq(@redis.client)
   end
