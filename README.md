@@ -20,6 +20,8 @@ namespaced_redis.set('foo', 'bar') # redis_connection.set('ns:foo', 'bar')
 
 namespaced_redis.get('foo')
 # => "bar"
+redis_connection.get('foo')
+# => nil
 redis_connection.get('ns:foo')
 # => "bar"
 
