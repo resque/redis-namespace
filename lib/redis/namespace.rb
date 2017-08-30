@@ -54,165 +54,165 @@ class Redis
     #     Add the namespace to all elements returned, e.g.
     #       key1 key2 => namespace:key1 namespace:key2
     NAMESPACED_COMMANDS = {
-      "append"           => [ :first ],
-      "bitcount"         => [ :first ],
-      "bitop"            => [ :exclude_first ],
-      "blpop"            => [ :exclude_last, :first ],
-      "brpop"            => [ :exclude_last, :first ],
-      "brpoplpush"       => [ :exclude_last ],
-      "debug"            => [ :exclude_first ],
-      "decr"             => [ :first ],
-      "decrby"           => [ :first ],
-      "del"              => [ :all   ],
-      "dump"             => [ :first ],
-      "exists"           => [ :first ],
-      "expire"           => [ :first ],
-      "expireat"         => [ :first ],
-      "eval"             => [ :eval_style ],
-      "evalsha"          => [ :eval_style ],
-      "get"              => [ :first ],
-      "getbit"           => [ :first ],
-      "getrange"         => [ :first ],
-      "getset"           => [ :first ],
-      "hset"             => [ :first ],
-      "hsetnx"           => [ :first ],
-      "hget"             => [ :first ],
-      "hincrby"          => [ :first ],
-      "hincrbyfloat"     => [ :first ],
-      "hmget"            => [ :first ],
-      "hmset"            => [ :first ],
-      "hdel"             => [ :first ],
-      "hexists"          => [ :first ],
-      "hlen"             => [ :first ],
-      "hkeys"            => [ :first ],
-      "hscan"            => [ :first ],
-      "hscan_each"       => [ :first ],
-      "hvals"            => [ :first ],
-      "hgetall"          => [ :first ],
-      "incr"             => [ :first ],
-      "incrby"           => [ :first ],
-      "incrbyfloat"      => [ :first ],
-      "keys"             => [ :first, :all ],
-      "lindex"           => [ :first ],
-      "linsert"          => [ :first ],
-      "llen"             => [ :first ],
-      "lpop"             => [ :first ],
-      "lpush"            => [ :first ],
-      "lpushx"           => [ :first ],
-      "lrange"           => [ :first ],
-      "lrem"             => [ :first ],
-      "lset"             => [ :first ],
-      "ltrim"            => [ :first ],
-      "mapped_hmset"     => [ :first ],
-      "mapped_hmget"     => [ :first ],
-      "mapped_mget"      => [ :all, :all ],
-      "mapped_mset"      => [ :all ],
-      "mapped_msetnx"    => [ :all ],
-      "mget"             => [ :all ],
-      "monitor"          => [ :monitor ],
-      "move"             => [ :first ],
-      "mset"             => [ :alternate ],
-      "msetnx"           => [ :alternate ],
-      "object"           => [ :exclude_first ],
-      "persist"          => [ :first ],
-      "pexpire"          => [ :first ],
-      "pexpireat"        => [ :first ],
-      "pfadd"            => [ :first ],
-      "pfcount"          => [ :all ],
-      "pfmerge"          => [ :all ],
-      "psetex"           => [ :first ],
-      "psubscribe"       => [ :all ],
-      "pttl"             => [ :first ],
-      "publish"          => [ :first ],
-      "punsubscribe"     => [ :all ],
-      "rename"           => [ :all ],
-      "renamenx"         => [ :all ],
-      "restore"          => [ :first ],
-      "rpop"             => [ :first ],
-      "rpoplpush"        => [ :all ],
-      "rpush"            => [ :first ],
-      "rpushx"           => [ :first ],
-      "sadd"             => [ :first ],
-      "scard"            => [ :first ],
-      "scan"             => [ :scan_style, :second ],
-      "scan_each"        => [ :scan_style, :all ],
-      "sdiff"            => [ :all ],
-      "sdiffstore"       => [ :all ],
-      "set"              => [ :first ],
-      "setbit"           => [ :first ],
-      "setex"            => [ :first ],
-      "setnx"            => [ :first ],
-      "setrange"         => [ :first ],
-      "sinter"           => [ :all ],
-      "sinterstore"      => [ :all ],
-      "sismember"        => [ :first ],
-      "smembers"         => [ :first ],
-      "smove"            => [ :exclude_last ],
-      "sort"             => [ :sort  ],
-      "spop"             => [ :first ],
-      "srandmember"      => [ :first ],
-      "srem"             => [ :first ],
-      "sscan"            => [ :first ],
-      "sscan_each"       => [ :first ],
-      "strlen"           => [ :first ],
-      "subscribe"        => [ :all ],
-      "sunion"           => [ :all ],
-      "sunionstore"      => [ :all ],
-      "ttl"              => [ :first ],
-      "type"             => [ :first ],
-      "unsubscribe"      => [ :all ],
-      "zadd"             => [ :first ],
-      "zcard"            => [ :first ],
-      "zcount"           => [ :first ],
-      "zincrby"          => [ :first ],
-      "zinterstore"      => [ :exclude_options ],
-      "zrange"           => [ :first ],
-      "zrangebyscore"    => [ :first ],
-      "zrank"            => [ :first ],
-      "zrem"             => [ :first ],
-      "zremrangebyrank"  => [ :first ],
-      "zremrangebyscore" => [ :first ],
-      "zrevrange"        => [ :first ],
-      "zrevrangebyscore" => [ :first ],
-      "zrevrank"         => [ :first ],
-      "zscan"            => [ :first ],
-      "zscan_each"       => [ :first ],
-      "zscore"           => [ :first ],
-      "zunionstore"      => [ :exclude_options ],
-      "[]"               => [ :first ],
-      "[]="              => [ :first ]
-    }
+      'append'           => [:first],
+      'bitcount'         => [:first],
+      'bitop'            => [:exclude_first],
+      'blpop'            => %i(exclude_last first),
+      'brpop'            => %i(exclude_last first),
+      'brpoplpush'       => [:exclude_last],
+      'debug'            => [:exclude_first],
+      'decr'             => [:first],
+      'decrby'           => [:first],
+      'del'              => [:all],
+      'dump'             => [:first],
+      'exists'           => [:first],
+      'expire'           => [:first],
+      'expireat'         => [:first],
+      'eval'             => [:eval_style],
+      'evalsha'          => [:eval_style],
+      'get'              => [:first],
+      'getbit'           => [:first],
+      'getrange'         => [:first],
+      'getset'           => [:first],
+      'hset'             => [:first],
+      'hsetnx'           => [:first],
+      'hget'             => [:first],
+      'hincrby'          => [:first],
+      'hincrbyfloat'     => [:first],
+      'hmget'            => [:first],
+      'hmset'            => [:first],
+      'hdel'             => [:first],
+      'hexists'          => [:first],
+      'hlen'             => [:first],
+      'hkeys'            => [:first],
+      'hscan'            => [:first],
+      'hscan_each'       => [:first],
+      'hvals'            => [:first],
+      'hgetall'          => [:first],
+      'incr'             => [:first],
+      'incrby'           => [:first],
+      'incrbyfloat'      => [:first],
+      'keys'             => %i(first all),
+      'lindex'           => [:first],
+      'linsert'          => [:first],
+      'llen'             => [:first],
+      'lpop'             => [:first],
+      'lpush'            => [:first],
+      'lpushx'           => [:first],
+      'lrange'           => [:first],
+      'lrem'             => [:first],
+      'lset'             => [:first],
+      'ltrim'            => [:first],
+      'mapped_hmset'     => [:first],
+      'mapped_hmget'     => [:first],
+      'mapped_mget'      => %i(all all),
+      'mapped_mset'      => [:all],
+      'mapped_msetnx'    => [:all],
+      'mget'             => [:all],
+      'monitor'          => [:monitor],
+      'move'             => [:first],
+      'mset'             => [:alternate],
+      'msetnx'           => [:alternate],
+      'object'           => [:exclude_first],
+      'persist'          => [:first],
+      'pexpire'          => [:first],
+      'pexpireat'        => [:first],
+      'pfadd'            => [:first],
+      'pfcount'          => [:all],
+      'pfmerge'          => [:all],
+      'psetex'           => [:first],
+      'psubscribe'       => [:all],
+      'pttl'             => [:first],
+      'publish'          => [:first],
+      'punsubscribe'     => [:all],
+      'rename'           => [:all],
+      'renamenx'         => [:all],
+      'restore'          => [:first],
+      'rpop'             => [:first],
+      'rpoplpush'        => [:all],
+      'rpush'            => [:first],
+      'rpushx'           => [:first],
+      'sadd'             => [:first],
+      'scard'            => [:first],
+      'scan'             => %i(scan_style second),
+      'scan_each'        => %i(scan_style all),
+      'sdiff'            => [:all],
+      'sdiffstore'       => [:all],
+      'set'              => [:first],
+      'setbit'           => [:first],
+      'setex'            => [:first],
+      'setnx'            => [:first],
+      'setrange'         => [:first],
+      'sinter'           => [:all],
+      'sinterstore'      => [:all],
+      'sismember'        => [:first],
+      'smembers'         => [:first],
+      'smove'            => [:exclude_last],
+      'sort'             => [:sort],
+      'spop'             => [:first],
+      'srandmember'      => [:first],
+      'srem'             => [:first],
+      'sscan'            => [:first],
+      'sscan_each'       => [:first],
+      'strlen'           => [:first],
+      'subscribe'        => [:all],
+      'sunion'           => [:all],
+      'sunionstore'      => [:all],
+      'ttl'              => [:first],
+      'type'             => [:first],
+      'unsubscribe'      => [:all],
+      'zadd'             => [:first],
+      'zcard'            => [:first],
+      'zcount'           => [:first],
+      'zincrby'          => [:first],
+      'zinterstore'      => [:exclude_options],
+      'zrange'           => [:first],
+      'zrangebyscore'    => [:first],
+      'zrank'            => [:first],
+      'zrem'             => [:first],
+      'zremrangebyrank'  => [:first],
+      'zremrangebyscore' => [:first],
+      'zrevrange'        => [:first],
+      'zrevrangebyscore' => [:first],
+      'zrevrank'         => [:first],
+      'zscan'            => [:first],
+      'zscan_each'       => [:first],
+      'zscore'           => [:first],
+      'zunionstore'      => [:exclude_options],
+      '[]'               => [:first],
+      '[]='              => [:first]
+    }.freeze
     TRANSACTION_COMMANDS = {
-      "discard"          => [],
-      "exec"             => [],
-      "multi"            => [],
-      "unwatch"          => [ :all ],
-      "watch"            => [ :all ],
-    }
+      'discard'          => [],
+      'exec'             => [],
+      'multi'            => [],
+      'unwatch'          => [:all],
+      'watch'            => [:all]
+    }.freeze
     HELPER_COMMANDS = {
-      "auth"             => [],
-      "disconnect!"      => [],
-      "echo"             => [],
-      "ping"             => [],
-      "time"             => [],
-    }
+      'auth'             => [],
+      'disconnect!'      => [],
+      'echo'             => [],
+      'ping'             => [],
+      'time'             => []
+    }.freeze
     ADMINISTRATIVE_COMMANDS = {
-      "bgrewriteaof"     => [],
-      "bgsave"           => [],
-      "config"           => [],
-      "dbsize"           => [],
-      "flushall"         => [],
-      "flushdb"          => [],
-      "info"             => [],
-      "lastsave"         => [],
-      "quit"             => [],
-      "randomkey"        => [],
-      "save"             => [],
-      "script"           => [],
-      "select"           => [],
-      "shutdown"         => [],
-      "slaveof"          => [],
-    }
+      'bgrewriteaof'     => [],
+      'bgsave'           => [],
+      'config'           => [],
+      'dbsize'           => [],
+      'flushall'         => [],
+      'flushdb'          => [],
+      'info'             => [],
+      'lastsave'         => [],
+      'quit'             => [],
+      'randomkey'        => [],
+      'save'             => [],
+      'script'           => [],
+      'select'           => [],
+      'shutdown'         => [],
+      'slaveof'          => []
+    }.freeze
 
     DEPRECATED_COMMANDS = [
       ADMINISTRATIVE_COMMANDS
@@ -222,7 +222,7 @@ class Redis
       NAMESPACED_COMMANDS,
       TRANSACTION_COMMANDS,
       HELPER_COMMANDS,
-      ADMINISTRATIVE_COMMANDS,
+      ADMINISTRATIVE_COMMANDS
     ].compact.reduce(:merge)
 
     # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
@@ -236,11 +236,11 @@ class Redis
       @namespace = namespace
       @redis = options[:redis] || Redis.current
       @warning = !!options.fetch(:warning) do
-                   !ENV['REDIS_NAMESPACE_QUIET']
-                 end
+        !ENV['REDIS_NAMESPACE_QUIET']
+      end
       @deprecations = !!options.fetch(:deprecations) do
-                        ENV['REDIS_NAMESPACE_DEPRECATIONS']
-                      end
+        ENV['REDIS_NAMESPACE_DEPRECATIONS']
+      end
     end
 
     def deprecations?
@@ -261,11 +261,11 @@ class Redis
       call_with_namespace(:type, key)
     end
 
-    alias_method :self_respond_to?, :respond_to?
+    alias self_respond_to? respond_to?
 
     # emulate Ruby 1.9+ and keep respond_to_missing? logic together.
-    def respond_to?(command, include_private=false)
-      super or respond_to_missing?(command, include_private)
+    def respond_to?(command, include_private = false)
+      super || respond_to_missing?(command, include_private)
     end
 
     def keys(query = nil)
@@ -287,7 +287,7 @@ class Redis
     def namespace(desired_namespace = nil)
       if desired_namespace
         yield Redis::Namespace.new(desired_namespace,
-                                   :redis => @redis)
+                                   redis: @redis)
       end
 
       @namespace
@@ -309,12 +309,11 @@ class Redis
         # redis-namespace cannot safely apply a namespace to their effects.
         return super if deprecations?
         if warning?
-          warn("Passing '#{normalized_command}' command to redis as is; " +
-               "administrative commands cannot be effectively namespaced " +
-               "and should be called on the redis connection directly; " +
-               "passthrough has been deprecated and will be removed in " +
-               "redis-namespace 2.0 (at #{call_site})"
-               )
+          warn("Passing '#{normalized_command}' command to redis as is; " \
+               'administrative commands cannot be effectively namespaced ' \
+               'and should be called on the redis connection directly; ' \
+               'passthrough has been deprecated and will be removed in ' \
+               "redis-namespace 2.0 (at #{call_site})")
         end
         call_with_namespace(command, *args, &block)
       elsif COMMANDS.include?(normalized_command)
@@ -325,11 +324,17 @@ class Redis
         # Passing it to @redis as is, where redis-namespace shows
         # a warning message if @warning is set.
         if warning?
-          warn("Passing '#{command}' command to redis as is; blind " +
-               "passthrough has been deprecated and will be removed in " +
+          warn("Passing '#{command}' command to redis as is; blind " \
+               'passthrough has been deprecated and will be removed in ' \
                "redis-namespace 2.0 (at #{call_site})")
         end
-        @redis.send(command, *args, &block)
+        if @redis.respond_to?(:with)
+          @redis.with do |conn|
+            conn.send(command, *args, &block)
+          end
+        else
+          @redis.send(command, *args, &block)
+        end
       else
         super
       end
@@ -340,15 +345,14 @@ class Redis
       "for #{@redis.id}/#{@namespace}>"
     end
 
-    def respond_to_missing?(command, include_all=false)
+    def respond_to_missing?(command, include_all = false)
       normalized_command = command.to_s.downcase
 
-      case
-      when DEPRECATED_COMMANDS.include?(normalized_command)
+      if DEPRECATED_COMMANDS.include?(normalized_command)
         !deprecations?
-      when COMMANDS.include?(normalized_command)
+      elsif COMMANDS.include?(normalized_command)
         true
-      when !deprecations? && redis.respond_to?(command, include_all)
+      elsif !deprecations? && redis.respond_to?(command, include_all)
         true
       else
         defined?(super) && super
@@ -359,13 +363,13 @@ class Redis
       handling = COMMANDS[command.to_s.downcase]
 
       if handling.nil?
-        fail("Redis::Namespace does not know how to handle '#{command}'.")
+        raise("Redis::Namespace does not know how to handle '#{command}'.")
       end
 
       (before, after) = handling
 
       # Modify the local *args array in-place, no need to copy it.
-      args.map! {|arg| clone_args(arg)}
+      args.map! { |arg| clone_args(arg) }
 
       # Add the namespace to any parameters that are keys.
       case before
@@ -394,14 +398,14 @@ class Redis
       when :sort
         args[0] = add_namespace(args[0]) if args[0]
         if args[1].is_a?(Hash)
-          [:by, :store].each do |key|
+          %i(by store).each do |key|
             args[1][key] = add_namespace(args[1][key]) if args[1][key]
           end
 
           args[1][:get] = Array(args[1][:get])
 
           args[1][:get].each_index do |i|
-            args[1][:get][i] = add_namespace(args[1][:get][i]) unless args[1][:get][i] == "#"
+            args[1][:get][i] = add_namespace(args[1][:get][i]) unless args[1][:get][i] == '#'
           end
         end
       when :eval_style
@@ -421,7 +425,7 @@ class Redis
           args[1] = add_namespace(args[1])
         end
       when :scan_style
-        options = (args.last.kind_of?(Hash) ? args.pop : {})
+        options = (args.last.is_a?(Hash) ? args.pop : {})
         options[:match] = add_namespace(options.fetch(:match, '*'))
         args << options
 
@@ -431,8 +435,15 @@ class Redis
         end
       end
 
+      result = nil
       # Dispatch the command to Redis and store the result.
-      result = @redis.send(command, *args, &block)
+      if @redis.respond_to?(:with)
+        @redis.with do |conn|
+          result = conn.send(command, *args, &block)
+        end
+      else
+        result = @redis.send(command, *args, &block)
+      end
 
       # Don't try to remove namespace from a Redis::Future, you can't.
       return result if result.is_a?(Redis::Future)
@@ -450,14 +461,14 @@ class Redis
       result
     end
 
-  private
+    private
 
     # Avoid modifying the caller's (pass-by-reference) arguments.
     def clone_args(arg)
       if arg.is_a?(Array)
-        arg.map {|sub_arg| clone_args(sub_arg)}
+        arg.map { |sub_arg| clone_args(sub_arg) }
       elsif arg.is_a?(Hash)
-        Hash[arg.map {|k, v| [clone_args(k), clone_args(v)]}]
+        Hash[arg.map { |k, v| [clone_args(k), clone_args(v)] }]
       else
         arg # Some objects (e.g. symbol) can't be dup'd.
       end
@@ -467,13 +478,36 @@ class Redis
       caller.reject { |l| l.start_with?(__FILE__) }.first
     end
 
-    def namespaced_block(command, &block)
-      redis.send(command) do |r|
-        begin
-          original, @redis = @redis, r
-          yield self
-        ensure
-          @redis = original
+    def namespaced_block(command)
+      credis = nil
+      if redis.respond_to?(:with)
+        redis.with do |conn|
+          conn.send(command) do |r|
+            begin
+              original = @redis
+              @redis = r
+              yield self
+            ensure
+              @redis = original
+            end
+          end
+        end
+      else
+        redis.send(command) do |r|
+          begin
+            original = @redis
+            if r.respond_to?(:with)
+              r.with do |conn|
+                @redis = conn
+                yield self
+              end
+            else
+              @redis = r
+              yield self
+            end
+          ensure
+            @redis = original
+          end
         end
       end
     end
@@ -483,9 +517,9 @@ class Redis
 
       case key
       when Array
-        key.map! {|k| add_namespace k}
+        key.map! { |k| add_namespace k }
       when Hash
-        key.keys.each {|k| key[add_namespace(k)] = key.delete(k)}
+        key.keys.each { |k| key[add_namespace(k)] = key.delete(k) }
         key
       else
         "#{@namespace}:#{key}"
@@ -497,9 +531,9 @@ class Redis
 
       case key
       when Array
-        key.map {|k| rem_namespace k}
+        key.map { |k| rem_namespace k }
       when Hash
-        Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
+        Hash[*key.map { |k, v| [rem_namespace(k), v] }.flatten]
       when Enumerator
         create_enumerator do |yielder|
           key.each { |k| yielder.yield rem_namespace(k) }
