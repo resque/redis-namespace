@@ -241,6 +241,7 @@ class Redis
       @deprecations = !!options.fetch(:deprecations) do
                         ENV['REDIS_NAMESPACE_DEPRECATIONS']
                       end
+      @is_client_respond = @redis.respond_to?(:_client)
     end
 
     def deprecations?
@@ -252,7 +253,13 @@ class Redis
     end
 
     def client
-      @redis.client
+      warn("The `client` method removed redis-rb 4.0.0, so use `_client` method." +
+               "`client` method will remove redis-namespace 2.0 (at #{call_site})") if @is_client_respond
+      _client
+    end
+
+    def _client
+      @is_client_respond ? @redis._client : @redis.client # for redis-4.0.0
     end
 
     # Ruby defines a now deprecated type method so we need to override it here

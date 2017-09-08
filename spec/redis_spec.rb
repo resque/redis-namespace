@@ -4,6 +4,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe "redis" do
   @redis_version = Gem::Version.new(Redis.current.info["redis_version"])
+  let(:redis_client) { @redis.respond_to?(:_client) ? @redis._client : @redis.client}
 
   before(:all) do
     # use database 15 for testing so we dont accidentally step on your real data
@@ -24,8 +25,12 @@ describe "redis" do
     @redis.quit
   end
 
-  it "proxies `client` to the client" do
-    @namespaced.client.should eq(@redis.client)
+  it "proxies `client` to the _client and deprecated" do
+    @namespaced.client.should eq(redis_client)
+  end
+
+  it "proxies `_client` to the _client" do
+    @namespaced._client.should eq(redis_client)
   end
 
   it "should be able to use a namespace" do
