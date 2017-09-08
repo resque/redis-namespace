@@ -13,7 +13,7 @@ describe "redis" do
   before(:each) do
     @namespaced = Redis::Namespace.new(:ns, :redis => @redis)
     @redis.flushdb
-    @redis['foo'] = 'bar'
+    @redis.set('foo', 'bar')
   end
 
   after(:each) do
@@ -29,15 +29,15 @@ describe "redis" do
   end
 
   it "should be able to use a namespace" do
-    @namespaced['foo'].should eq(nil)
-    @namespaced['foo'] = 'chris'
-    @namespaced['foo'].should eq('chris')
-    @redis['foo'] = 'bob'
-    @redis['foo'].should eq('bob')
+    @namespaced.get('foo').should eq(nil)
+    @namespaced.set('foo', 'chris')
+    @namespaced.get('foo').should eq('chris')
+    @redis.set('foo', 'bob')
+    @redis.get('foo').should eq('bob')
 
     @namespaced.incrby('counter', 2)
-    @namespaced['counter'].to_i.should eq(2)
-    @redis['counter'].should eq(nil)
+    @namespaced.get('counter').to_i.should eq(2)
+    @redis.get('counter').should eq(nil)
     @namespaced.type('counter').should eq('string')
   end
 
@@ -60,21 +60,21 @@ describe "redis" do
   end
 
   it "should be able to use a namespace with del" do
-    @namespaced['foo'] = 1000
-    @namespaced['bar'] = 2000
-    @namespaced['baz'] = 3000
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    @namespaced.set('baz', 3000)
     @namespaced.del 'foo'
-    @namespaced['foo'].should eq(nil)
+    @namespaced.get('foo').should eq(nil)
     @namespaced.del 'bar', 'baz'
-    @namespaced['bar'].should eq(nil)
-    @namespaced['baz'].should eq(nil)
+    @namespaced.get('bar').should eq(nil)
+    @namespaced.get('baz').should eq(nil)
   end
 
   it 'should be able to use a namespace with append' do
-    @namespaced['foo'] = 'bar'
+    @namespaced.set('foo', 'bar')
     @namespaced.append('foo','n').should eq(4)
-    @namespaced['foo'].should eq('barn')
-    @redis['foo'].should eq('bar')
+    @namespaced.get('foo').should eq('barn')
+    @redis.get('foo').should eq('bar')
   end
 
   it 'should be able to use a namespace with brpoplpush' do
@@ -124,15 +124,15 @@ describe "redis" do
 
   it 'should be able to use a namespace with setrange' do
     @namespaced.setrange('foo', 0, 'bar')
-    @namespaced['foo'].should eq('bar')
+    @namespaced.get('foo').should eq('bar')
 
     @namespaced.setrange('bar', 2, 'foo')
-    @namespaced['bar'].should eq("\000\000foo")
+    @namespaced.get('bar').should eq("\000\000foo")
   end
 
   it "should be able to use a namespace with mget" do
-    @namespaced['foo'] = 1000
-    @namespaced['bar'] = 2000
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
     @namespaced.mapped_mget('foo', 'bar').should eq({ 'foo' => '1000', 'bar' => '2000' })
     @namespaced.mapped_mget('foo', 'baz', 'bar').should eq({'foo'=>'1000', 'bar'=>'2000', 'baz' => nil})
   end
@@ -276,9 +276,9 @@ describe "redis" do
   end
 
   it "should yield the correct list of keys" do
-    @namespaced["foo"] = 1
-    @namespaced["bar"] = 2
-    @namespaced["baz"] = 3
+    @namespaced.set("foo", 1)
+    @namespaced.set("bar", 2)
+    @namespaced.set("baz", 3)
     @namespaced.keys("*").sort.should eq(%w( bar baz foo ))
     @namespaced.keys.sort.should eq(%w( bar baz foo ))
   end
@@ -322,8 +322,8 @@ describe "redis" do
   it "should returned response array from pipelined block" do
     @namespaced.mset "foo", "bar", "key", "value"
     result = @namespaced.pipelined do |r|
-      r["foo"]
-      r["key"]
+      r.get("foo")
+      r.get("key")
     end
     result.should eq(["bar", "value"])
   end
@@ -344,32 +344,32 @@ describe "redis" do
   end
 
   it "can change its namespace" do
-    @namespaced['foo'].should eq(nil)
-    @namespaced['foo'] = 'chris'
-    @namespaced['foo'].should eq('chris')
+    @namespaced.get('foo').should eq(nil)
+    @namespaced.set('foo', 'chris')
+    @namespaced.get('foo').should eq('chris')
 
     @namespaced.namespace.should eq(:ns)
     @namespaced.namespace = :spec
     @namespaced.namespace.should eq(:spec)
 
-    @namespaced['foo'].should eq(nil)
-    @namespaced['foo'] = 'chris'
-    @namespaced['foo'].should eq('chris')
+    @namespaced.get('foo').should eq(nil)
+    @namespaced.set('foo', 'chris')
+    @namespaced.get('foo').should eq('chris')
   end
 
   it "can accept a temporary namespace" do
     @namespaced.namespace.should eq(:ns)
-    @namespaced['foo'].should eq(nil)
+    @namespaced.get('foo').should eq(nil)
 
     @namespaced.namespace(:spec) do |temp_ns|
       temp_ns.namespace.should eq(:spec)
-      temp_ns['foo'].should eq(nil)
-      temp_ns['foo'] = 'jake'
-      temp_ns['foo'].should eq('jake')
+      temp_ns.get('foo').should eq(nil)
+      temp_ns.set('foo', 'jake')
+      temp_ns.get('foo').should eq('jake')
     end
 
     @namespaced.namespace.should eq(:ns)
-    @namespaced['foo'].should eq(nil)
+    @namespaced.get('foo').should eq(nil)
   end
 
   it "should respond to :namespace=" do
