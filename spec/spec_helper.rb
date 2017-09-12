@@ -4,6 +4,7 @@ Bundler.setup(:default, :test)
 Bundler.require(:default, :test)
 
 require 'rspec'
+require 'rspec/its'
 require 'redis'
 require 'logger'
 
