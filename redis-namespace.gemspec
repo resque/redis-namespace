@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.files            += Dir.glob("test/**/*")
   s.files            += Dir.glob("spec/**/*")
 
-  s.add_dependency    "redis", "~> 3.0", ">= 3.0.4"
+  s.add_dependency    "redis", "< 5.0", ">= 3.0.4"
 
   s.add_development_dependency "rake", "~> 10.1"
   s.add_development_dependency "rspec", "~> 2.14"
