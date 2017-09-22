@@ -253,8 +253,8 @@ class Redis
     end
 
     def client
-      warn("The `client` method removed redis-rb 4.0.0, so use `_client` method." +
-               "`client` method will remove redis-namespace 2.0 (at #{call_site})") if @is_client_respond
+      warn("The `client` method broken changed by redis-rb 4.0.0, so we should use `_client` method." +
+               "`client` method in redis-namespace will remove 2.0 (at #{call_site})") if @is_client_respond
       _client
     end
 
