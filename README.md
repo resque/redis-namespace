@@ -9,7 +9,7 @@ require 'redis-namespace'
 
 redis_connection = Redis.new
 # => #<Redis client v3.1.0 for redis://127.0.0.1:6379/0>
-namespaced_redis = Redis::Namespace.new(:ns, :redis => redis_connection)
+namespaced_redis = Redis::Namespace.new(:ns, redis: redis_connection)
 # => #<Redis::Namespace v1.5.0 with client v3.1.0 for redis://127.0.0.1:6379/0/ns>
 
 namespaced_redis.set('foo', 'bar') # redis_connection.set('ns:foo', 'bar')
