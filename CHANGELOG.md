@@ -1,3 +1,7 @@
+## 1.6.0
+
+ - Support redis-rb 4.0.0
+
 ## 1.5.1
 
  - Add support for `UNWATCH` command
