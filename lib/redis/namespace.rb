@@ -234,6 +234,8 @@ class Redis
 
     def initialize(namespace, options = {})
       @namespace = namespace
+      #respond_to? is costly. So, will assing the result to @namespace_is_block and use that variable
+      @namespace_is_block = namespace.respond_to?(:call)
       @redis = options[:redis] || Redis.current
       @warning = !!options.fetch(:warning) do
                    !ENV['REDIS_NAMESPACE_QUIET']
@@ -250,6 +252,14 @@ class Redis
 
     def warning?
       @warning
+    end
+
+    def namespace_is_block?
+      @namespace_is_block
+    end
+
+    def namespace_string
+      namespace_is_block? ? @namespace.call : @namespace
     end
 
     def client
@@ -297,7 +307,7 @@ class Redis
                                    :redis => @redis)
       end
 
-      @namespace
+      namespace_string
     end
 
     def exec
@@ -344,7 +354,7 @@ class Redis
 
     def inspect
       "<#{self.class.name} v#{VERSION} with client v#{Redis::VERSION} "\
-      "for #{@redis.id}/#{@namespace}>"
+      "for #{@redis.id}/#{namespace_string}>"
     end
 
     def respond_to_missing?(command, include_all=false)
@@ -495,7 +505,7 @@ class Redis
         key.keys.each {|k| key[add_namespace(k)] = key.delete(k)}
         key
       else
-        "#{@namespace}:#{key}"
+        "#{namespace_string}:#{key}"
       end
     end
 
@@ -512,7 +522,7 @@ class Redis
           key.each { |k| yielder.yield rem_namespace(k) }
         end
       else
-        key.to_s.sub(/\A#{@namespace}:/, '')
+        key.to_s.sub(/\A#{namespace_string}:/, '')
       end
     end
 

@@ -29,6 +29,10 @@ namespaced_redis.get('foo')
 # => nil
 redis_connection.get('ns:foo')
 # => nil
+
+#Redis::Namespace will also support Proc as a namespace and will take the resultant string as namespace at run time.
+namespaced_redis = Redis::Namespace.new(Proc.new {Tenant.current_tenant}, :redis => redis_connection)
+
 ~~~
 
 Installation
