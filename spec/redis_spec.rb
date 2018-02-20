@@ -75,6 +75,17 @@ describe "redis" do
     @namespaced.get('baz').should eq(nil)
   end
 
+  it "should be able to use a namespace with unlink" do
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    @namespaced.set('baz', 3000)
+    @namespaced.unlink 'foo'
+    @namespaced.get('foo').should eq(nil)
+    @namespaced.unlink 'bar', 'baz'
+    @namespaced.get('bar').should eq(nil)
+    @namespaced.get('baz').should eq(nil)
+  end
+
   it 'should be able to use a namespace with append' do
     @namespaced.set('foo', 'bar')
     @namespaced.append('foo','n').should eq(4)
