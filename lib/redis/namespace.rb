@@ -160,6 +160,7 @@ class Redis
       "sunionstore"      => [ :all ],
       "ttl"              => [ :first ],
       "type"             => [ :first ],
+      "unlink"           => [ :all   ],
       "unsubscribe"      => [ :all ],
       "zadd"             => [ :first ],
       "zcard"            => [ :first ],
