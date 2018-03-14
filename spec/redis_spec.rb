@@ -25,6 +25,12 @@ describe "redis" do
     @redis.quit
   end
 
+  # redis-rb 3.3.4+
+  it "should inject :namespace into connection info" do
+    info = @redis.connection.merge(:namespace => :ns)
+    expect(@namespaced.connection).to eq(info)
+  end
+
   it "proxies `client` to the _client and deprecated" do
     @namespaced.client.should eq(redis_client)
   end
