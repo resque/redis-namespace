@@ -301,6 +301,10 @@ class Redis
       @namespace
     end
 
+    def connection
+      @redis.connection.tap { |info| info[:namespace] = @namespace }
+    end
+
     def exec
       call_with_namespace(:exec)
     end
