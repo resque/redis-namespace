@@ -140,7 +140,7 @@ describe "redis" do
 
   it 'should be able to use a namespace with setbit' do
     @namespaced.setbit('virgin_key', 1, 1)
-    @namespaced.exists('virgin_key').should be_true
+    @namespaced.exists('virgin_key').should be true
     @namespaced.get('virgin_key').should eq(@namespaced.getrange('virgin_key',0,-1))
   end
 
@@ -176,9 +176,9 @@ describe "redis" do
 
   it "should be able to use a namespace with mapped_msetnx" do
     @namespaced.set('foo','1')
-    @namespaced.mapped_msetnx('foo'=>'1000', 'bar'=>'2000').should be_false
+    @namespaced.mapped_msetnx('foo'=>'1000', 'bar'=>'2000').should be false
     @namespaced.mapped_mget('foo', 'bar').should eq({ 'foo' => '1', 'bar' => nil })
-    @namespaced.mapped_msetnx('bar'=>'2000', 'baz'=>'1000').should be_true
+    @namespaced.mapped_msetnx('bar'=>'2000', 'baz'=>'1000').should be true
     @namespaced.mapped_mget('foo', 'bar').should eq({ 'foo' => '1', 'bar' => '2000' })
   end
 
@@ -197,8 +197,8 @@ describe "redis" do
     @namespaced.hmget('bar', 'a_number').should eq(['4'])
     @namespaced.hgetall('bar').should eq({'key' => 'value', 'key1' => 'value1', 'a_number' => '4'})
 
-    @namespaced.hsetnx('foonx','nx',10).should be_true
-    @namespaced.hsetnx('foonx','nx',12).should be_false
+    @namespaced.hsetnx('foonx','nx',10).should be true
+    @namespaced.hsetnx('foonx','nx',12).should be false
     @namespaced.hget('foonx','nx').should eq("10")
     @namespaced.hkeys('foonx').should eq(%w{ nx })
     @namespaced.hvals('foonx').should eq(%w{ 10 })
@@ -360,7 +360,7 @@ describe "redis" do
   end
 
   it 'should not add namespace to disconnect!' do
-    expect(@redis).to receive(:disconnect!).with().and_call_original
+    expect(@redis).to receive(:disconnect!).with(no_args).and_call_original
 
     expect(@namespaced.disconnect!).to be nil
   end
@@ -439,7 +439,7 @@ describe "redis" do
         v = @namespaced.dump("foo")
         @redis.del("ns:foo")
 
-        expect(@namespaced.restore("foo", 1000, v)).to be_true
+        expect(@namespaced.restore("foo", 1000, v)).to be_truthy
         expect(@redis.get("ns:foo")).to eq 'a'
         expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
 
@@ -447,7 +447,7 @@ describe "redis" do
         w = @namespaced.dump("bar")
         @redis.del("ns:bar")
 
-        expect(@namespaced.restore("bar", 1000, w)).to be_true
+        expect(@namespaced.restore("bar", 1000, w)).to be_truthy
         expect(@redis.lrange('ns:bar', 0, -1)).to eq %w(b c d)
         expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
       end
