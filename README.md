@@ -82,7 +82,7 @@ namespaced.redis.flushall()
 
 As mentioned above, 2.0 will remove blind passthrough and the administrative command passthrough.
 By default in 1.5+, deprecation warnings are present and enabled;
-they can be silenced by initializing `Redis::Namespace` with `warnings: false` or by setting the `REDIS_NAMESPACE_QUIET` environment variable.
+they can be silenced by initializing `Redis::Namespace` with `warning: false` or by setting the `REDIS_NAMESPACE_QUIET` environment variable.
 
 Early opt-in
 ------------
