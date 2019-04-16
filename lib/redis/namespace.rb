@@ -167,6 +167,8 @@ class Redis
       "zcount"           => [ :first ],
       "zincrby"          => [ :first ],
       "zinterstore"      => [ :exclude_options ],
+      "zpopmin",         => [ :first ],
+      "zpopmax",         => [ :first ],
       "zrange"           => [ :first ],
       "zrangebyscore"    => [ :first ],
       "zrank"            => [ :first ],
