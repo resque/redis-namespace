@@ -277,7 +277,9 @@ class Redis
 
     # emulate Ruby 1.9+ and keep respond_to_missing? logic together.
     def respond_to?(command, include_private=false)
-      super or respond_to_missing?(command, include_private)
+      return !deprecations? if DEPRECATED_COMMANDS.include?(command.to_s.downcase)
+
+      respond_to_missing?(command, include_private) or super
     end
 
     def keys(query = nil)
@@ -317,15 +319,12 @@ class Redis
       call_with_namespace(:eval, *args)
     end
 
-    def method_missing(command, *args, &block)
-      normalized_command = command.to_s.downcase
+    ADMINISTRATIVE_COMMANDS.keys.each do |command|
+      define_method(command) do |*args, &block|
+        raise NoMethodError if deprecations?
 
-      if ADMINISTRATIVE_COMMANDS.include?(normalized_command)
-        # administrative commands usage is deprecated and will be removed in 2.0
-        # redis-namespace cannot safely apply a namespace to their effects.
-        return super if deprecations?
         if warning?
-          warn("Passing '#{normalized_command}' command to redis as is; " +
+          warn("Passing '#{command}' command to redis as is; " +
                "administrative commands cannot be effectively namespaced " +
                "and should be called on the redis connection directly; " +
                "passthrough has been deprecated and will be removed in " +
@@ -333,8 +332,23 @@ class Redis
                )
         end
         call_with_namespace(command, *args, &block)
-      elsif COMMANDS.include?(normalized_command)
+      end
+    end
+
+    COMMANDS.keys.each do |command|
+      next if ADMINISTRATIVE_COMMANDS.include?(command)
+      next if method_defined?(command)
+
+      define_method(command) do |*args, &block|
         call_with_namespace(command, *args, &block)
+      end
+    end
+
+    def method_missing(command, *args, &block)
+      normalized_command = command.to_s.downcase
+
+      if COMMANDS.include?(normalized_command)
+        send(normalized_command, *args, &block)
       elsif @redis.respond_to?(normalized_command) && !deprecations?
         # blind passthrough is deprecated and will be removed in 2.0
         # redis-namespace does not know how to handle this command.
@@ -360,8 +374,6 @@ class Redis
       normalized_command = command.to_s.downcase
 
       case
-      when DEPRECATED_COMMANDS.include?(normalized_command)
-        !deprecations?
       when COMMANDS.include?(normalized_command)
         true
       when !deprecations? && redis.respond_to?(command, include_all)
