@@ -183,9 +183,7 @@ class Redis
       "zscan"            => [ :first ],
       "zscan_each"       => [ :first ],
       "zscore"           => [ :first ],
-      "zunionstore"      => [ :exclude_options ],
-      "[]"               => [ :first ],
-      "[]="              => [ :first ]
+      "zunionstore"      => [ :exclude_options ]
     }
     TRANSACTION_COMMANDS = {
       "discard"          => [],
