@@ -442,6 +442,45 @@ describe "redis" do
     expect { @namespaced.unknown('foo') }.to raise_exception NoMethodError
   end
 
+  describe '#inspect' do
+    let(:single_level_names) { %i[first] }
+    let(:double_level_names) { %i[first second] }
+    let(:triple_level_names) { %i[first second third] }
+    let(:namespace_builder) do
+      ->(redis, *namespaces) { namespaces.reduce(redis) { |r, n| Redis::Namespace.new(n, redis: r) } }
+    end
+    let(:regexp_builder) do
+      ->(*namespaces) { %r{/#{namespaces.join(':')}>\z} }
+    end
+
+    context 'when one namespace' do
+      let(:single_namespaced) { namespace_builder.call(@redis, *single_level_names) }
+      let(:regexp) { regexp_builder.call(*single_level_names) }
+
+      it 'should have correct ending of inspect string' do
+        expect(regexp =~ single_namespaced.inspect).not_to be(nil)
+      end
+    end
+
+    context 'when two namespaces' do
+      let(:double_namespaced) { namespace_builder.call(@redis, *double_level_names) }
+      let(:regexp) { regexp_builder.call(*double_level_names) }
+
+      it 'should have correct ending of inspect string' do
+        expect(regexp =~ double_namespaced.inspect).not_to be(nil)
+      end
+    end
+
+    context 'when three namespaces' do
+      let(:triple_namespaced) { namespace_builder.call(@redis, *triple_level_names) }
+      let(:regexp) { regexp_builder.call(*triple_level_names) }
+
+      it 'should have correct ending of inspect string' do
+        expect(regexp =~ triple_namespaced.inspect).not_to be(nil)
+      end
+    end
+  end
+
   # Redis 2.6 RC reports its version as 2.5.
   if @redis_version >= Gem::Version.new("2.5.0")
     describe "redis 2.6 commands" do
