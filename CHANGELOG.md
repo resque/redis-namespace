@@ -1,6 +1,7 @@
 ## master
 
  - Add support for `BITPOS` command
+ - Remove deprecated has_rdoc config from gemspec
 
 ## 1.6.0
 

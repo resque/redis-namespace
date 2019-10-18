@@ -10,7 +10,6 @@ Gem::Specification.new do |s|
   s.homepage          = "http://github.com/resque/redis-namespace"
   s.email             = ["chris@ozmm.org", "hone02@gmail.com", "steve@steveklabnik.com", "me@yaauie.com"]
   s.authors           = ["Chris Wanstrath", "Terence Lee", "Steve Klabnik", "Ryan Biesemeyer"]
-  s.has_rdoc          = false
   s.license           = 'MIT'
 
   s.files             = %w( README.md Rakefile LICENSE )
