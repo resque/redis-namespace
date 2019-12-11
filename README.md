@@ -3,7 +3,7 @@ redis-namespace
 
 Redis::Namespace provides an interface to a namespaced subset of your [redis][] keyspace (e.g., keys with a common beginning), and requires the [redis-rb][] gem.
 
-~~~ irb
+```ruby
 require 'redis-namespace'
 # => true
 
@@ -29,7 +29,7 @@ namespaced_redis.get('foo')
 # => nil
 redis_connection.get('ns:foo')
 # => nil
-~~~
+```
 
 Installation
 ============
@@ -42,20 +42,18 @@ From the command line:
 
 Or in your Gemfile:
 
-~~~ ruby
+```ruby
 gem 'redis-namespace'
-~~~
+```
 
 Caveats
 =======
 
-`Redis::Namespace` provides a namespaced interface to `Redis` by keeping an internal registry of the method signatures in `Redis` provided by the redis-rb gem;
-we keep track of which arguments need the namespace added, and which return values need the namespace removed.
+`Redis::Namespace` provides a namespaced interface to `Redis` by keeping an internal registry of the method signatures in `Redis` provided by the [redis-rb][] gem; we keep track of which arguments need the namespace added, and which return values need the namespace removed.
 
 Blind Passthrough
 -----------------
-If your version of this gem doesn't know about a particular command, it can't namespace it.
-Historically, this has meant that Redis::Namespace blindly passes unknown commands on to the underlying redis connection without modification which can lead to surprising effects.
+If your version of this gem doesn't know about a particular command, it can't namespace it. Historically, this has meant that Redis::Namespace blindly passes unknown commands on to the underlying redis connection without modification which can lead to surprising effects.
 
 As of v1.5.0, blind passthrough has been deprecated, and the functionality will be removed entirely in 2.0.
 
@@ -63,19 +61,16 @@ If you come across a command that is not yet supported, please open an issue on 
 
 Administrative Commands
 -----------------------
-The effects of some redis commands cannot be limited to a particular namespace (e.g., `FLUSHALL`, which literally truncates all databases in your redis server, regardless of keyspace).
-Historically, this has meant that Redis::Namespace intentionally passes administrative commands on to the underlying redis connection without modification, which can lead to surprising effects.
+The effects of some redis commands cannot be limited to a particular namespace (e.g., `FLUSHALL`, which literally truncates all databases in your redis server, regardless of keyspace). Historically, this has meant that Redis::Namespace intentionally passes administrative commands on to the underlying redis connection without modification, which can lead to surprising effects.
 
-As of v1.6.0, the direct use of administrative commands has been deprecated, and the functionality will be removed entirely in 2.0;
-while such commands are often useful for testing or administration, their meaning is inherently hidden when placed behind an interface that implies it will namespace everything.
+As of v1.6.0, the direct use of administrative commands has been deprecated, and the functionality will be removed entirely in 2.0; while such commands are often useful for testing or administration, their meaning is inherently hidden when placed behind an interface that implies it will namespace everything.
 
-The prefered way to send an administrative command is on the redis connection
-itself, which is publicly exposed as `Redis::Namespace#redis`:
+The prefered way to send an administrative command is on the redis connection itself, which is publicly exposed as `Redis::Namespace#redis`:
 
-~~~ ruby
+```ruby
 namespaced.redis.flushall()
 # => "OK"
-~~~
+```
 
 2.x Planned Breaking Changes
 ============================
