@@ -283,6 +283,15 @@ describe "redis" do
     inter_values.should =~ [['orange', 1.0], ['eggplant', 3.0]]
   end
 
+  it "should return lexicographical range for sorted set" do
+    @namespaced.zadd('food', 0, 'orange')
+    @namespaced.zadd('food', 0, 'banana')
+    @namespaced.zadd('food', 0, 'eggplant')
+
+    values = @namespaced.zrangebylex('food', '[b', '(o')
+    values.should =~ ['banana', 'eggplant']
+  end
+
   it "should add namespace to sort" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
