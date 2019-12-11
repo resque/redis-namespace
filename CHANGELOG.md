@@ -3,6 +3,8 @@
 
 ## 1.7.0
 
+ - Add `Redis::Namespace.full_namespace` to return the full namespace in case of nested clients.
+ - Add support for `ZRANGEBYLEX`, `ZREMRANGEBYLEX` and `ZREVRANGEBYLEX`.
  - Add support for `BITPOS` command
  - Remove deprecated has_rdoc config from gemspec
  - Remove EOL rubies from travis.yml
