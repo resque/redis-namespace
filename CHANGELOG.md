@@ -2,6 +2,8 @@
 
  - Add support for `BITPOS` command
  - Remove deprecated has_rdoc config from gemspec
+ - Remove EOL rubies from travis.yml
+ - Add Ruby 2.4 minimum version to gemspec
 
 ## 1.6.0
 
