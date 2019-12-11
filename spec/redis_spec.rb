@@ -292,6 +292,27 @@ describe "redis" do
     values.should =~ ['banana', 'eggplant']
   end
 
+  it "should return the number of elements removed from the set" do
+    @namespaced.zadd('food', 0, 'orange')
+    @namespaced.zadd('food', 0, 'banana')
+    @namespaced.zadd('food', 0, 'eggplant')
+
+    removed = @namespaced.zremrangebylex('food', '[b', '(o')
+    removed.should == 2
+
+    values = @namespaced.zrange('food', 0, -1)
+    values.should == ['orange']
+  end
+
+  it "should return reverce lexicographical range for sorted set" do
+    @namespaced.zadd('food', 0, 'orange')
+    @namespaced.zadd('food', 0, 'banana')
+    @namespaced.zadd('food', 0, 'eggplant')
+
+    values = @namespaced.zrevrangebylex('food', '(o', '[b')
+    values.should =~ ['banana', 'eggplant']
+  end
+
   it "should add namespace to sort" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
