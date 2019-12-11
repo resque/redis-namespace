@@ -43,7 +43,7 @@ describe Redis::Namespace do
       its(:deprecations?) { should be true }
 
       context('with an unhandled command') do
-        it { should_not respond_to :unhandled }
+        it { is_expected.not_to respond_to :unhandled }
 
         it('raises a NoMethodError') do
           expect do
@@ -53,7 +53,7 @@ describe Redis::Namespace do
       end
 
       context('with an administrative command') do
-        it { should_not respond_to :flushdb }
+        it { is_expected.not_to respond_to :flushdb }
 
         it('raises a NoMethodError') do
           expect do
@@ -69,7 +69,7 @@ describe Redis::Namespace do
       its(:deprecations?) { should be false }
 
       context('with an an unhandled command') do
-        it { should respond_to :unhandled }
+        it { is_expected.to respond_to :unhandled }
 
         it 'blindly passes through' do
           expect(redis).to receive(:unhandled)
@@ -106,7 +106,7 @@ describe Redis::Namespace do
       end
 
       context('with an administrative command') do
-        it { should respond_to :flushdb }
+        it { is_expected.to respond_to :flushdb }
         it 'processes the command' do
           expect(redis).to receive(:flushdb)
           capture_stderr { namespaced.flushdb }
