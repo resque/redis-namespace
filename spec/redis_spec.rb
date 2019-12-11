@@ -840,4 +840,15 @@ describe "redis" do
       @redis.pfcount("ns:pfc").should == 10
     end
   end
+
+  describe :full_namespace do
+    it "should return the full namespace including sub namespaces" do
+      sub_namespaced     = Redis::Namespace.new(:sub1, :redis => @namespaced)
+      sub_sub_namespaced = Redis::Namespace.new(:sub2, :redis => sub_namespaced)
+
+      expect(@namespaced.full_namespace).to eql("ns")
+      expect(sub_namespaced.full_namespace).to eql("ns:sub1")
+      expect(sub_sub_namespaced.full_namespace).to eql("ns:sub1:sub2")
+    end
+  end
 end

@@ -306,6 +306,10 @@ class Redis
       @namespace
     end
 
+    def full_namespace
+      redis.is_a?(Namespace) ? "#{redis.full_namespace}:#{namespace}" : namespace.to_s
+    end
+
     def connection
       @redis.connection.tap { |info| info[:namespace] = @namespace }
     end
