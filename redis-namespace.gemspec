@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version           = Redis::Namespace::VERSION
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Namespaces Redis commands."
-  s.homepage          = "http://github.com/resque/redis-namespace"
+  s.homepage          = "https://github.com/resque/redis-namespace"
   s.email             = ["chris@ozmm.org", "hone02@gmail.com", "steve@steveklabnik.com", "me@yaauie.com"]
   s.authors           = ["Chris Wanstrath", "Terence Lee", "Steve Klabnik", "Ryan Biesemeyer"]
   s.license           = 'MIT'
