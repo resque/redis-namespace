@@ -12,6 +12,13 @@ Gem::Specification.new do |s|
   s.authors           = ["Chris Wanstrath", "Terence Lee", "Steve Klabnik", "Ryan Biesemeyer"]
   s.license           = 'MIT'
 
+  s.metadata = {
+    "bug_tracker_uri"   => "https://github.com/resque/redis-namespace/issues",
+    "changelog_uri"     => "https://github.com/resque/redis-namespace/blob/master/CHANGELOG.md",
+    "documentation_uri" => "https://www.rubydoc.info/gems/redis-namespace/#{s.version}",
+    "source_code_uri"   => "https://github.com/resque/redis-namespace/tree/v#{s.version}",
+  }
+
   s.files             = %w( README.md Rakefile LICENSE )
   s.files            += Dir.glob("lib/**/*")
   s.files            += Dir.glob("test/**/*")
