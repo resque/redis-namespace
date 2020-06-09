@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency    "redis", ">= 3.0.4"
 
-  s.add_development_dependency "rake", "~> 10.1"
+  s.add_development_dependency "rake"
   s.add_development_dependency "rspec", "~> 3.7"
   s.add_development_dependency "rspec-its"
 
