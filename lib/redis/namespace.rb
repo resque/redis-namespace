@@ -348,6 +348,7 @@ class Redis
       define_method(command) do |*args, &block|
         call_with_namespace(command, *args, &block)
       end
+      ruby2_keywords(command) if respond_to?(:ruby2_keywords, true)
     end
 
     def method_missing(command, *args, &block)
@@ -486,11 +487,29 @@ class Redis
 
   private
 
+    unless Hash.respond_to?(:ruby2_keywords_hash?)
+      using Module.new {
+        refine Hash do
+          class << Hash
+            if RUBY_VERSION >= "2.7"
+              def ruby2_keywords_hash?(hash)
+                !new(*[hash]).default.equal?(hash)
+              end
+            else
+              def ruby2_keywords_hash?(hash)
+                false
+              end
+            end
+          end
+        end
+      }
+    end
+
     # Avoid modifying the caller's (pass-by-reference) arguments.
     def clone_args(arg)
       if arg.is_a?(Array)
         arg.map {|sub_arg| clone_args(sub_arg)}
-      elsif arg.is_a?(Hash)
+      elsif arg.is_a?(Hash) && !Hash.ruby2_keywords_hash?(arg)
         Hash[arg.map {|k, v| [clone_args(k), clone_args(v)]}]
       else
         arg # Some objects (e.g. symbol) can't be dup'd.
