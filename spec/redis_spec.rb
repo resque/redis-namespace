@@ -140,8 +140,20 @@ describe "redis" do
 
   it 'should be able to use a namespace with setbit' do
     @namespaced.setbit('virgin_key', 1, 1)
-    expect(@namespaced.exists('virgin_key')).to be true
+    expect(@namespaced.exists?('virgin_key')).to be true
     expect(@namespaced.get('virgin_key')).to eq(@namespaced.getrange('virgin_key',0,-1))
+  end
+
+  it 'should be able to use a namespace with exists' do
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    expect(@namespaced.exists('foo', 'bar')).to eq(2)
+  end
+
+  it 'should be able to use a namespace with exists?' do
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    expect(@namespaced.exists?('does_not_exist', 'bar')).to eq(true)
   end
 
   it 'should be able to use a namespace with bitpos' do
