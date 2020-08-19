@@ -68,7 +68,8 @@ class Redis
       "decrby"           => [ :first ],
       "del"              => [ :all   ],
       "dump"             => [ :first ],
-      "exists"           => [ :first ],
+      "exists"           => [ :all ],
+      "exists?"          => [ :all ],
       "expire"           => [ :first ],
       "expireat"         => [ :first ],
       "eval"             => [ :eval_style ],
@@ -324,6 +325,7 @@ class Redis
     def eval(*args)
       call_with_namespace(:eval, *args)
     end
+    ruby2_keywords(:eval) if respond_to?(:ruby2_keywords, true)
 
     ADMINISTRATIVE_COMMANDS.keys.each do |command|
       define_method(command) do |*args, &block|
@@ -339,6 +341,7 @@ class Redis
         end
         call_with_namespace(command, *args, &block)
       end
+      ruby2_keywords(command) if respond_to?(:ruby2_keywords, true)
     end
 
     COMMANDS.keys.each do |command|
@@ -348,6 +351,7 @@ class Redis
       define_method(command) do |*args, &block|
         call_with_namespace(command, *args, &block)
       end
+      ruby2_keywords(command) if respond_to?(:ruby2_keywords, true)
     end
 
     def method_missing(command, *args, &block)
@@ -370,6 +374,7 @@ class Redis
         super
       end
     end
+    ruby2_keywords(:method_missing) if respond_to?(:ruby2_keywords, true)
 
     def inspect
       "<#{self.class.name} v#{VERSION} with client v#{Redis::VERSION} "\
@@ -405,6 +410,7 @@ class Redis
       case before
       when :first
         args[0] = add_namespace(args[0]) if args[0]
+        args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
       when :all
         args = add_namespace(args)
       when :exclude_first
@@ -417,7 +423,7 @@ class Redis
         args.push(last) if last
       when :exclude_options
         if args.last.is_a?(Hash)
-          last = args.pop
+          last = ruby2_keywords_hash(args.pop)
           args = add_namespace(args)
           args.push(last)
         else
@@ -437,6 +443,7 @@ class Redis
           args[1][:get].each_index do |i|
             args[1][:get][i] = add_namespace(args[1][:get][i]) unless args[1][:get][i] == "#"
           end
+          args[1] = ruby2_keywords_hash(args[1])
         end
       when :eval_style
         # redis.eval() and evalsha() can either take the form:
@@ -457,7 +464,7 @@ class Redis
       when :scan_style
         options = (args.last.kind_of?(Hash) ? args.pop : {})
         options[:match] = add_namespace(options.fetch(:match, '*'))
-        args << options
+        args << ruby2_keywords_hash(options)
 
         if block
           original_block = block
@@ -483,8 +490,19 @@ class Redis
 
       result
     end
+    ruby2_keywords(:call_with_namespace) if respond_to?(:ruby2_keywords, true)
 
   private
+
+    if Hash.respond_to?(:ruby2_keywords_hash)
+      def ruby2_keywords_hash(kwargs)
+        Hash.ruby2_keywords_hash(kwargs)
+      end
+    else
+      def ruby2_keywords_hash(kwargs)
+        kwargs
+      end
+    end
 
     # Avoid modifying the caller's (pass-by-reference) arguments.
     def clone_args(arg)

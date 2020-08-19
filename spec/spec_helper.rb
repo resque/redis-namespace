@@ -12,6 +12,10 @@ $TESTING=true
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'redis/namespace'
 
+if Redis.respond_to?(:exists_returns_integer=)
+  Redis.exists_returns_integer = true
+end
+
 module Helper
   def capture_stderr(io = nil)
     require 'stringio'

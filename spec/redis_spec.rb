@@ -140,7 +140,7 @@ describe "redis" do
 
   it 'should be able to use a namespace with setbit' do
     @namespaced.setbit('virgin_key', 1, 1)
-    expect(@namespaced.exists('virgin_key')).to be true
+    expect(@namespaced.exists?('virgin_key')).to be true
     expect(@namespaced.get('virgin_key')).to eq(@namespaced.getrange('virgin_key',0,-1))
   end
 
@@ -239,7 +239,7 @@ describe "redis" do
     @namespaced.zadd('sort2', 2, 2)
     @namespaced.zadd('sort2', 3, 3)
     @namespaced.zadd('sort2', 4, 4)
-    @namespaced.zunionstore('union', ['sort1', 'sort2'], :weights => [2, 1])
+    @namespaced.zunionstore('union', ['sort1', 'sort2'], weights: [2, 1])
     expect(@namespaced.zrevrange('union', 0, -1)).to eq(%w( 2 4 3 1 ))
   end
 
