@@ -1,5 +1,9 @@
 ## master
 
+## 1.8.0
+
+ - Fix `Redis::Namespace#inspect` to include the entire namespaced prefix.
+ - Support variadic `exists` and `exists?`.
 
 ## 1.7.0
 
