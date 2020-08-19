@@ -144,6 +144,18 @@ describe "redis" do
     expect(@namespaced.get('virgin_key')).to eq(@namespaced.getrange('virgin_key',0,-1))
   end
 
+  it 'should be able to use a namespace with exists' do
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    expect(@namespaced.exists('foo', 'bar')).to eq(2)
+  end
+
+  it 'should be able to use a namespace with exists?' do
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    expect(@namespaced.exists?('does_not_exist', 'bar')).to eq(true)
+  end
+
   it 'should be able to use a namespace with bitpos' do
     @namespaced.setbit('bit_map', 42, 1)
     expect(@namespaced.bitpos('bit_map', 0)).to eq(0)
