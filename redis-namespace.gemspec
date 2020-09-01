@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.files            += Dir.glob("test/**/*")
   s.files            += Dir.glob("spec/**/*")
 
-  s.required_ruby_version = '~> 2.4'
+  s.required_ruby_version = '>= 2.4'
 
   s.add_dependency    "redis", ">= 3.0.4"
 
