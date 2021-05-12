@@ -1,5 +1,9 @@
 ## master
 
+## 1.8.1
+
+ - Allow Ruby 3.0 version in gemspec
+
 ## 1.8.0
 
  - Fix `Redis::Namespace#inspect` to include the entire namespaced prefix.
