@@ -369,7 +369,7 @@ class Redis
                "passthrough has been deprecated and will be removed in " +
                "redis-namespace 2.0 (at #{call_site})")
         end
-        @redis.send(command, *args, &block)
+        execute_command(command, *args, &block)
       else
         super
       end
@@ -473,7 +473,7 @@ class Redis
       end
 
       # Dispatch the command to Redis and store the result.
-      result = @redis.send(command, *args, &block)
+      result = execute_command(command, *args, &block)
 
       # Don't try to remove namespace from a Redis::Future, you can't.
       return result if result.is_a?(Redis::Future)
@@ -520,12 +520,25 @@ class Redis
     end
 
     def namespaced_block(command, &block)
-      redis.send(command) do |r|
-        begin
-          original, @redis = @redis, r
-          yield self
-        ensure
-          @redis = original
+      if redis.is_a?(ConnectionPool)
+        redis.with do |conn|
+          conn.send(command) do |r|
+            begin
+              original, @redis = @redis, r
+              yield self
+            ensure
+              @redis = original
+            end
+          end
+        end
+      else
+        redis.send(command) do |r|
+          begin
+            original, @redis = @redis, r
+            yield self
+          ensure
+            @redis = original
+          end
         end
       end
     end
@@ -570,6 +583,16 @@ class Redis
         Generator.new(&block).to_enum
       else
         Enumerator.new(&block)
+      end
+    end
+
+    def execute_command(command, *args, &block)
+      if @redis.is_a?(ConnectionPool)
+        @redis.with do |conn|
+          conn.send(command, *args, &block)
+        end
+      else
+        @redis.send(command, *args, &block)
       end
     end
   end
