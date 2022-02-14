@@ -1,5 +1,9 @@
 ## master
 
+## x.y.z
+
+- Fix deprecation warning of Redis.current (#189)
+
 ## 1.8.1
 
  - Allow Ruby 3.0 version in gemspec
