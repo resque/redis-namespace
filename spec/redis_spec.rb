@@ -6,23 +6,12 @@ describe "redis" do
   @redis_version = Gem::Version.new(Redis.current.info["redis_version"])
   let(:redis_client) { @redis.respond_to?(:_client) ? @redis._client : @redis.client}
 
-  before(:all) do
+  before(:each) do
     # use database 15 for testing so we dont accidentally step on your real data
     @redis = Redis.new :db => 15
-  end
-
-  before(:each) do
+    @redis.flushdb
     @namespaced = Redis::Namespace.new(:ns, :redis => @redis)
-    @redis.flushdb
     @redis.set('foo', 'bar')
-  end
-
-  after(:each) do
-    @redis.flushdb
-  end
-
-  after(:all) do
-    @redis.quit
   end
 
   # redis-rb 3.3.4+
@@ -396,6 +385,27 @@ describe "redis" do
       r.get("key")
     end
     expect(result).to eq(["bar", "value"])
+  end
+
+  it "is thread safe for multi blocks" do
+    mon = Monitor.new
+    entered = false
+    entered_cond = mon.new_cond
+
+    thread = Thread.new do
+      mon.synchronize do
+        entered_cond.wait_until { entered }
+        @namespaced.multi
+      end
+    end
+
+    @namespaced.multi do |transaction|
+      entered = true
+      mon.synchronize { entered_cond.signal }
+      thread.join(0.1)
+      transaction.get("foo")
+    end
+    thread.join
   end
 
   it "should add namespace to strlen" do
