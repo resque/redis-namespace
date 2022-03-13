@@ -3,7 +3,7 @@
 ## 1.8.2
 
 - Fix compatibility with redis-rb 4.6.0. `Redis::Namespace#multi` and `Redis::Namespace#pipelined` were no longer
-  thread-safe. Calling these methods concurrently onthe same instance could cause pipelines or transaction to be
+  thread-safe. Calling these methods concurrently on the same instance could cause pipelines or transaction to be
   intertwined. See https://github.com/resque/redis-namespace/issues/191 and https://github.com/redis/redis-rb/issues/1088
 
 ## 1.8.1
