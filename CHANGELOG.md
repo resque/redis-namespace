@@ -1,5 +1,9 @@
 ## master
 
+## x.y.z
+
+- Fix deprecation warning of Redis.current (#189)
+
 ## 1.8.2
 
 - Fix compatibility with redis-rb 4.6.0. `Redis::Namespace#multi` and `Redis::Namespace#pipelined` were no longer

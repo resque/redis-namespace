@@ -242,7 +242,7 @@ class Redis
 
     def initialize(namespace, options = {})
       @namespace = namespace
-      @redis = options[:redis] || Redis.current
+      @redis = options[:redis] || Redis.new
       @warning = !!options.fetch(:warning) do
                    !ENV['REDIS_NAMESPACE_QUIET']
                  end

@@ -3,7 +3,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "redis" do
-  @redis_version = Gem::Version.new(Redis.current.info["redis_version"])
+  @redis_version = Gem::Version.new(Redis.new.info["redis_version"])
   let(:redis_client) { @redis.respond_to?(:_client) ? @redis._client : @redis.client}
 
   before(:each) do
