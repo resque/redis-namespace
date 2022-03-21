@@ -492,6 +492,12 @@ class Redis
     end
     ruby2_keywords(:call_with_namespace) if respond_to?(:ruby2_keywords, true)
 
+  protected
+
+    def redis=(redis)
+      @redis = redis
+    end
+
   private
 
     if Hash.respond_to?(:ruby2_keywords_hash)
@@ -520,12 +526,13 @@ class Redis
     end
 
     def namespaced_block(command, &block)
-      redis.send(command) do |r|
-        begin
-          original, @redis = @redis, r
-          yield self
-        ensure
-          @redis = original
+      if block.arity == 0
+        redis.send(command, &block)
+      else
+        redis.send(command) do |r|
+          copy = dup
+          copy.redis = r
+          yield copy
         end
       end
     end
