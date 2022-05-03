@@ -687,7 +687,7 @@ describe "redis" do
               expect(result).to match_array(namespaced_keys)
             end
           end
-        end if Redis.current.respond_to?(:scan)
+        end if Redis.new.respond_to?(:scan)
 
         context '#scan_each' do
           context 'when :match supplied' do
@@ -720,7 +720,7 @@ describe "redis" do
               end
             end
           end
-        end if Redis.current.respond_to?(:scan_each)
+        end if Redis.new.respond_to?(:scan_each)
       end
 
       context 'hash scan methods' do
@@ -748,7 +748,7 @@ describe "redis" do
               expect(results).to match_array(@redis.hgetall('ns:hsh').to_a)
             end
           end
-        end if Redis.current.respond_to?(:hscan)
+        end if Redis.new.respond_to?(:hscan)
 
         context '#hscan_each' do
           context 'when :match supplied' do
@@ -781,7 +781,7 @@ describe "redis" do
               end
             end
           end
-        end if Redis.current.respond_to?(:hscan_each)
+        end if Redis.new.respond_to?(:hscan_each)
       end
 
       context 'set scan methods' do
@@ -809,7 +809,7 @@ describe "redis" do
               expect(results).to match_array(set)
             end
           end
-        end if Redis.current.respond_to?(:sscan)
+        end if Redis.new.respond_to?(:sscan)
 
         context '#sscan_each' do
           context 'when :match supplied' do
@@ -842,7 +842,7 @@ describe "redis" do
               end
             end
           end
-        end if Redis.current.respond_to?(:sscan_each)
+        end if Redis.new.respond_to?(:sscan_each)
       end
 
       context 'zset scan methods' do
@@ -872,7 +872,7 @@ describe "redis" do
               expect(results).to match_array(hash.to_a)
             end
           end
-        end if Redis.current.respond_to?(:zscan)
+        end if Redis.new.respond_to?(:zscan)
 
         context '#zscan_each' do
           context 'when :match supplied' do
@@ -905,7 +905,7 @@ describe "redis" do
               end
             end
           end
-        end if Redis.current.respond_to?(:zscan_each)
+        end if Redis.new.respond_to?(:zscan_each)
       end
     end
   end
