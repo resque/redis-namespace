@@ -261,7 +261,7 @@ class Redis
     end
 
     def client
-      warn("The client method is deprecated as of redis-rb 4.0.0, please use the new _client" +
+      warn("The client method is deprecated as of redis-rb 4.0.0, please use the new _client " +
             "method instead. Support for the old method will be removed in redis-namespace 2.0.") if @has_new_client_method && deprecations?
       _client
     end
