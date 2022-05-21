@@ -3,6 +3,7 @@
 ## x.y.z
 
 - Fix deprecation warning of Redis.current (#189)
+- Add support for getex
 
 ## 1.8.2
 

@@ -95,6 +95,13 @@ describe "redis" do
     expect(@namespaced.lrange('bar',0,-1)).to eq(['bar'])
   end
 
+  it "should be able to use a namespace with getex" do
+    expect(@namespaced.set('mykey', 'Hello')).to eq('OK')
+    expect(@namespaced.getex('mykey', ex: 50)).to eq('Hello')
+    expect(@namespaced.get('mykey')).to eq('Hello')
+    expect(@namespaced.ttl('mykey')).to eq(50)
+  end
+
   it 'should be able to use a namespace with getbit' do
     @namespaced.set('foo','bar')
     expect(@namespaced.getbit('foo',1)).to eq(1)

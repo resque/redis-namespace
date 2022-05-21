@@ -75,6 +75,7 @@ class Redis
       "eval"             => [ :eval_style ],
       "evalsha"          => [ :eval_style ],
       "get"              => [ :first ],
+      "getex"            => [ :first ],
       "getbit"           => [ :first ],
       "getrange"         => [ :first ],
       "getset"           => [ :first ],
