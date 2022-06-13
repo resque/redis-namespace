@@ -152,6 +152,7 @@ class Redis
       "sinterstore"      => [ :all ],
       "sismember"        => [ :first ],
       "smembers"         => [ :first ],
+      "smismember"       => [ :first ],
       "smove"            => [ :exclude_last ],
       "sort"             => [ :sort  ],
       "spop"             => [ :first ],
