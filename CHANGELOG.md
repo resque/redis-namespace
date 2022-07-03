@@ -2,6 +2,9 @@
 
 ## x.y.z
 
+- Add ability to clear namespaces (#202). This operation can run for a very long time if the namespace contains
+  lots of keys! It should be used in tests, or when the namespace is small enough and you are sure you know what you are doing.
+
 ## 1.9.0
 
 - Accept Proc as a namespace (#203)

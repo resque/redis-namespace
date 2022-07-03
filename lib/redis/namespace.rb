@@ -330,6 +330,32 @@ class Redis
     end
     ruby2_keywords(:eval) if respond_to?(:ruby2_keywords, true)
 
+    # This operation can run for a very long time if the namespace contains lots of keys!
+    # It should be used in tests, or when the namespace is small enough
+    # and you are sure you know what you are doing.
+    def clear
+      if warning?
+        warn("This operation can run for a very long time if the namespace contains lots of keys! " +
+             "It should be used in tests, or when the namespace is small enough " +
+             "and you are sure you know what you are doing.")
+      end
+
+      batch_size = 1000
+
+      if supports_scan?
+        cursor = "0"
+        begin
+          cursor, keys = scan(cursor, count: batch_size)
+          del(*keys) unless keys.empty?
+        end until cursor == "0"
+      else
+        all_keys = keys("*")
+        all_keys.each_slice(batch_size) do |keys|
+          del(*keys)
+        end
+      end
+    end
+
     ADMINISTRATIVE_COMMANDS.keys.each do |command|
       define_method(command) do |*args, &block|
         raise NoMethodError if deprecations?
@@ -590,6 +616,11 @@ class Redis
       else
         Enumerator.new(&block)
       end
+    end
+
+    def supports_scan?
+      redis_version = @redis.info["redis_version"]
+      Gem::Version.new(redis_version) >= Gem::Version.new("2.8.0")
     end
   end
 end

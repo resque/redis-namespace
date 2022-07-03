@@ -1048,4 +1048,30 @@ describe "redis" do
       expect(sub_sub_namespaced.full_namespace).to eql("ns:sub1:sub2")
     end
   end
+
+  describe :clear do
+    it "warns with helpful output" do
+      expect { @namespaced.clear }.to output(/can run for a very long time/).to_stderr
+    end
+
+    it "should delete all the keys" do
+      @redis.set("foo", "bar")
+      @namespaced.mset("foo1", "bar", "foo2", "bar")
+      capture_stderr { @namespaced.clear }
+
+      expect(@redis.keys).to eq ["foo"]
+      expect(@namespaced.keys).to be_empty
+    end
+
+    it "should delete all the keys in older redis" do
+      allow(@redis).to receive(:info).and_return({ "redis_version" => "2.7.0" })
+
+      @redis.set("foo", "bar")
+      @namespaced.mset("foo1", "bar", "foo2", "bar")
+      capture_stderr { @namespaced.clear }
+
+      expect(@redis.keys).to eq ["foo"]
+      expect(@namespaced.keys).to be_empty
+    end
+  end
 end
