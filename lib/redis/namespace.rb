@@ -432,6 +432,7 @@ class Redis
           args = add_namespace(args)
         end
       when :alternate
+        args = args.flatten
         args.each_with_index { |a, i| args[i] = add_namespace(a) if i.even? }
       when :sort
         args[0] = add_namespace(args[0]) if args[0]

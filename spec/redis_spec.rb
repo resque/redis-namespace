@@ -177,15 +177,22 @@ describe "redis" do
     @namespaced.mset('foo', '1000', 'bar', '2000')
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
     expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil})
+
     @namespaced.mapped_mset('foo' => '3000', 'bar' => '5000')
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '3000', 'bar' => '5000' })
     expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '3000', 'bar' => '5000', 'baz' => nil})
+
+    @namespaced.mset(['foo', '4000'], ['baz', '6000'])
+    expect(@namespaced.mapped_mget('foo', 'bar', 'baz')).to eq({ 'foo' => '4000', 'bar' => '5000', 'baz' => '6000' })
   end
 
   it "should be able to use a namespace with msetnx" do
     @namespaced.msetnx('foo', '1000', 'bar', '2000')
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
     expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil})
+
+    @namespaced.msetnx(['baz', '4000'])
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => '4000'})
   end
 
   it "should be able to use a namespace with mapped_msetnx" do
