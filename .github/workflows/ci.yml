@@ -10,14 +10,14 @@ jobs:
       matrix:
         redis-version:
           # - 3.0.4
-          # - 3.3
-          # - 4.0
+          - 3.3
+          - 4.0
           # - 4.1
           # - 4.2
           # - 4.3
           # - 4.4
-          - 4.5
-          - 4.6
+          # - 4.5
+          # - 4.6
           - latest
         ruby-version:
           - head
@@ -51,13 +51,5 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true # 'bundle install' and cache
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ruby
-
     - name: Run tests
       run: bundle exec rake
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
