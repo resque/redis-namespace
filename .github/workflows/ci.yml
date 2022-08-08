@@ -9,8 +9,6 @@ jobs:
     strategy:
       matrix:
         redis-version:
-          # - 3.0.4
-          # - 3.3
           - 4.0
           - 4.1
           - 4.2
