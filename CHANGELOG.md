@@ -5,6 +5,8 @@
 - Accept Proc as a namespace (#203)
 - Fix deprecation warning of Redis.current (#189)
 - Add support for getex
+- Require Redis >= 4
+- Added matrix tests on CI for supported redis versions
 
 ## 1.8.2
 
