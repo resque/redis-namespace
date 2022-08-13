@@ -309,7 +309,7 @@ class Redis
                                    :redis => @redis)
       end
 
-      @namespace
+      @namespace.respond_to?(:call) ? @namespace.call : @namespace
     end
 
     def full_namespace
@@ -317,7 +317,7 @@ class Redis
     end
 
     def connection
-      @redis.connection.tap { |info| info[:namespace] = @namespace }
+      @redis.connection.tap { |info| info[:namespace] = namespace }
     end
 
     def exec
@@ -541,7 +541,7 @@ class Redis
     end
 
     def add_namespace(key)
-      return key unless key && @namespace
+      return key unless key && namespace
 
       case key
       when Array
@@ -550,12 +550,12 @@ class Redis
         key.keys.each {|k| key[add_namespace(k)] = key.delete(k)}
         key
       else
-        "#{@namespace}:#{key}"
+        "#{namespace}:#{key}"
       end
     end
 
     def rem_namespace(key)
-      return key unless key && @namespace
+      return key unless key && namespace
 
       case key
       when Array
@@ -567,7 +567,7 @@ class Redis
           key.each { |k| yielder.yield rem_namespace(k) }
         end
       else
-        key.to_s.sub(/\A#{@namespace}:/, '')
+        key.to_s.sub(/\A#{namespace}:/, '')
       end
     end
 

@@ -41,6 +41,17 @@ describe "redis" do
     expect(@namespaced.type('counter')).to eq('string')
   end
 
+  it "should work with Proc namespaces" do
+    namespace = Proc.new { :dynamic_ns }
+    namespaced = Redis::Namespace.new(namespace, redis: @redis)
+
+    expect(namespaced.get('foo')).to eq(nil)
+    namespaced.set('foo', 'chris')
+    expect(namespaced.get('foo')).to eq('chris')
+    @redis.set('foo', 'bob')
+    expect(@redis.get('foo')).to eq('bob')
+  end
+
   context 'when sending capital commands (issue 68)' do
     it 'should be able to use a namespace' do
       @namespaced.send('SET', 'fubar', 'quux')

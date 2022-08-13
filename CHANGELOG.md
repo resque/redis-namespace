@@ -2,6 +2,7 @@
 
 ## x.y.z
 
+- Accept Proc as a namespace (#203)
 - Fix deprecation warning of Redis.current (#189)
 - Add support for getex
 
