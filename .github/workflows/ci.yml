@@ -8,6 +8,15 @@ jobs:
 
     strategy:
       matrix:
+        redis-version:
+          - 4.0
+          - 4.1
+          - 4.2
+          - 4.3
+          - 4.4
+          - 4.5
+          - 4.6
+          - latest
         ruby-version:
           - head
           - '3.1'
@@ -29,6 +38,8 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
+    env:
+      REDIS_VERSION: "${{ matrix.redis-version }}"
 
     steps:
     - uses: actions/checkout@v2
@@ -37,5 +48,6 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true # 'bundle install' and cache
+
     - name: Run tests
       run: bundle exec rake

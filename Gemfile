@@ -1,5 +1,12 @@
 source "https://rubygems.org"
 
+case redis_version = ENV.fetch('REDIS_VERSION', 'latest')
+when 'latest'
+  gem 'redis', '~> 4'
+else
+  gem 'redis', "~> #{redis_version}"
+end
+
 platforms :rbx do
   # These are the ruby standard library
   # dependencies of redis-rb, rake, and rspec.
