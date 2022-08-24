@@ -240,22 +240,22 @@ describe "redis" do
   end
 
   it "should properly intersect three sets" do
-    @namespaced.sadd('foo', 1)
-    @namespaced.sadd('foo', 2)
-    @namespaced.sadd('foo', 3)
-    @namespaced.sadd('bar', 2)
-    @namespaced.sadd('bar', 3)
-    @namespaced.sadd('bar', 4)
-    @namespaced.sadd('baz', 3)
+    @namespaced.sadd?('foo', 1)
+    @namespaced.sadd?('foo', 2)
+    @namespaced.sadd?('foo', 3)
+    @namespaced.sadd?('bar', 2)
+    @namespaced.sadd?('bar', 3)
+    @namespaced.sadd?('bar', 4)
+    @namespaced.sadd?('baz', 3)
     expect(@namespaced.sinter('foo', 'bar', 'baz')).to eq(%w( 3 ))
   end
 
   it "should properly union two sets" do
-    @namespaced.sadd('foo', 1)
-    @namespaced.sadd('foo', 2)
-    @namespaced.sadd('bar', 2)
-    @namespaced.sadd('bar', 3)
-    @namespaced.sadd('bar', 4)
+    @namespaced.sadd?('foo', 1)
+    @namespaced.sadd?('foo', 2)
+    @namespaced.sadd?('bar', 2)
+    @namespaced.sadd?('bar', 3)
+    @namespaced.sadd?('bar', 4)
     expect(@namespaced.sunion('foo', 'bar').sort).to eq(%w( 1 2 3 4 ))
   end
 
@@ -340,8 +340,8 @@ describe "redis" do
   end
 
   it "should add namespace to sort" do
-    @namespaced.sadd('foo', 1)
-    @namespaced.sadd('foo', 2)
+    @namespaced.sadd?('foo', 1)
+    @namespaced.sadd?('foo', 2)
     @namespaced.set('weight_1', 2)
     @namespaced.set('weight_2', 1)
     @namespaced.set('value_1', 'a')
@@ -811,8 +811,8 @@ describe "redis" do
 
       context 'set scan methods' do
         before(:each) do
-          set.each { |elem| @namespaced.sadd('set', elem) }
-          @redis.sadd('set', 'WRONG')
+          set.each { |elem| @namespaced.sadd?('set', elem) }
+          @redis.sadd?('set', 'WRONG')
         end
         let(:set) do
           %w(zeta:one zeta:two three)

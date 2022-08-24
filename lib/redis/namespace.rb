@@ -137,7 +137,7 @@ class Redis
       "rpoplpush"        => [ :all ],
       "rpush"            => [ :first ],
       "rpushx"           => [ :first ],
-      "sadd"             => [ :first ],
+      "sadd?"             => [ :first ],
       "scard"            => [ :first ],
       "scan"             => [ :scan_style, :second ],
       "scan_each"        => [ :scan_style, :all ],
