@@ -202,6 +202,7 @@ class Redis
     HELPER_COMMANDS = {
       "auth"             => [],
       "disconnect!"      => [],
+      "close"            => [],
       "echo"             => [],
       "ping"             => [],
       "time"             => [],
