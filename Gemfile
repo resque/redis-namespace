@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 case redis_version = ENV.fetch('REDIS_VERSION', 'latest')
 when 'latest'
-  gem 'redis', '~> 4'
+  gem 'redis', '~> 5'
 else
   gem 'redis', "~> #{redis_version}"
 end

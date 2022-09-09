@@ -101,7 +101,7 @@ describe "redis" do
 
   it 'should be able to use a namespace with brpoplpush' do
     @namespaced.lpush('foo','bar')
-    expect(@namespaced.brpoplpush('foo','bar',0)).to eq('bar')
+    expect(@namespaced.brpoplpush('foo','bar', timeout: 0)).to eq('bar')
     expect(@namespaced.lrange('foo',0,-1)).to eq([])
     expect(@namespaced.lrange('bar',0,-1)).to eq(['bar'])
   end
