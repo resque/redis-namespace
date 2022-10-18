@@ -16,7 +16,6 @@ Gem::Specification.new do |s|
     "bug_tracker_uri"       => "https://github.com/resque/redis-namespace/issues",
     "changelog_uri"         => "https://github.com/resque/redis-namespace/blob/master/CHANGELOG.md",
     "documentation_uri"     => "https://www.rubydoc.info/gems/redis-namespace/#{s.version}",
-    "source_code_uri"       => "https://github.com/resque/redis-namespace/tree/v#{s.version}",
     "rubygems_mfa_required" => "true"
   }
 
