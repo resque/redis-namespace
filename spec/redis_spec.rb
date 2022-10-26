@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require File.dirname(__FILE__) + '/spec_helper'
+require 'connection_pool'
 
 describe "redis" do
   @redis_version = Gem::Version.new(Redis.new.info["redis_version"])
@@ -182,6 +183,19 @@ describe "redis" do
     @namespaced.set('bar', 2000)
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
     expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({'foo'=>'1000', 'bar'=>'2000', 'baz' => nil})
+  end
+
+  it "should utilize connection_pool while using a namespace with mget" do
+    memo = @namespaced
+    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+
+    @namespaced.set('foo', 1000)
+    @namespaced.set('bar', 2000)
+    expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({'foo'=>'1000', 'bar'=>'2000', 'baz' => nil})
+    @redis.get('foo').should eq('bar')
+
+    @namespaced = memo
   end
 
   it "should be able to use a namespace with mset" do
@@ -376,6 +390,21 @@ describe "redis" do
     expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
   end
 
+  it "should utilize connection_pool while adding namepsace to multi blocks" do
+    memo = @namespaced
+    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+
+    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.multi do |r|
+      r.del "foo"
+      r.mapped_hmset "foo", {"key1" => "value1"}
+    end
+    expect(@redis.get("foo")).to eq("bar")
+    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+
+    @namespaced = memo
+  end
+
   it "should pass through multi commands without block" do
     @namespaced.mapped_hmset "foo", {"key" => "value"}
 
@@ -385,6 +414,23 @@ describe "redis" do
     @namespaced.exec
 
     expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+  end
+
+  it "should utilize connection_pool while passing through multi commands without block" do
+    memo = @namespaced
+    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+
+    @namespaced.mapped_hmset "foo", {"key" => "value"}
+
+    @namespaced.multi
+    @namespaced.del "foo"
+    @namespaced.mapped_hmset "foo", {"key1" => "value1"}
+    @namespaced.exec
+
+    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@redis.get("foo")).to eq("bar")
+
+    @namespaced = memo
   end
 
   it 'should return futures without attempting to remove namespaces' do
@@ -401,6 +447,21 @@ describe "redis" do
       r.mapped_hmset "foo", {"key1" => "value1"}
     end
     expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+  end
+
+  it "should utilize connection_pool while adding namespace to pipelined blocks" do
+    memo = @namespaced
+    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+
+    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.pipelined do |r|
+      r.del "foo"
+      r.mapped_hmset "foo", {"key1" => "value1"}
+    end
+    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@redis.get("foo")).to eq("bar")
+
+    @namespaced = memo
   end
 
   it "should returned response array from pipelined block" do

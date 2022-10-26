@@ -372,7 +372,14 @@ class Redis
                "passthrough has been deprecated and will be removed in " +
                "redis-namespace 2.0 (at #{call_site})")
         end
-        @redis.send(command, *args, &block)
+
+        if @redis.class.name == "ConnectionPool"
+          @redis.with do |pool_connection|
+            pool_connection.send(command, *args, &block)
+          end
+        else
+          @redis.send(command, *args, &block)
+        end
       else
         super
       end
@@ -477,7 +484,14 @@ class Redis
       end
 
       # Dispatch the command to Redis and store the result.
-      result = @redis.send(command, *args, &block)
+      result = nil
+      if @redis.class.name == "ConnectionPool"
+        @redis.with do |pool_connection|
+          result = pool_connection.send(command, *args, &block)
+        end
+      else
+        result = @redis.send(command, *args, &block)
+      end
 
       # Don't try to remove namespace from a Redis::Future, you can't.
       return result if result.is_a?(Redis::Future)
@@ -531,12 +545,28 @@ class Redis
 
     def namespaced_block(command, &block)
       if block.arity == 0
-        redis.send(command, &block)
+        if redis.class.name == "ConnectionPool"
+          redis.with do |pool_connection|
+            pool_connection.send(command, &block)
+          end
+        else
+          redis.send(command, &block)
+        end
       else
-        redis.send(command) do |r|
-          copy = dup
-          copy.redis = r
-          yield copy
+        if redis.class.name == "ConnectionPool"
+          redis.with do |pool_connection|
+            pool_connection.send(command) do |r|
+              copy = dup
+              copy.redis = r
+              yield copy
+            end
+          end
+        else
+          redis.send(command) do |r|
+            copy = dup
+            copy.redis = r
+            yield copy
+          end
         end
       end
     end
