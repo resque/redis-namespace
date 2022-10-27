@@ -187,7 +187,12 @@ describe "redis" do
 
   it "should utilize connection_pool while using a namespace with mget" do
     memo = @namespaced
-    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+    connection_pool = ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 }
+    @namespaced = Redis::Namespace.new(:ns, redis: connection_pool)
+
+    expect(connection_pool).to receive(:with).and_call_original do |arg|
+      expect(arg).to be(an_instance_of(Redis))
+    end.at_least(:once)
 
     @namespaced.set('foo', 1000)
     @namespaced.set('bar', 2000)
@@ -392,7 +397,12 @@ describe "redis" do
 
   it "should utilize connection_pool while adding namepsace to multi blocks" do
     memo = @namespaced
-    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+    connection_pool = ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 }
+    @namespaced = Redis::Namespace.new(:ns, redis: connection_pool)
+
+    expect(connection_pool).to receive(:with).and_call_original do |arg|
+      expect(arg).to be(an_instance_of(Redis))
+    end.at_least(:once)
 
     @namespaced.mapped_hmset "foo", {"key" => "value"}
     @namespaced.multi do |r|
@@ -418,7 +428,12 @@ describe "redis" do
 
   it "should utilize connection_pool while passing through multi commands without block" do
     memo = @namespaced
-    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+    connection_pool = ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 }
+    @namespaced = Redis::Namespace.new(:ns, redis: connection_pool)
+
+    expect(connection_pool).to receive(:with).and_call_original do |arg|
+      expect(arg).to be(an_instance_of(Redis))
+    end.at_least(:once)
 
     @namespaced.mapped_hmset "foo", {"key" => "value"}
 
@@ -451,7 +466,12 @@ describe "redis" do
 
   it "should utilize connection_pool while adding namespace to pipelined blocks" do
     memo = @namespaced
-    @namespaced = Redis::Namespace.new(:ns, redis: ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 })
+    connection_pool = ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 }
+    @namespaced = Redis::Namespace.new(:ns, redis: connection_pool)
+
+    expect(connection_pool).to receive(:with).and_call_original do |arg|
+      expect(arg).to be(an_instance_of(Redis))
+    end.at_least(:once)
 
     @namespaced.mapped_hmset "foo", {"key" => "value"}
     @namespaced.pipelined do |r|
