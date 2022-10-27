@@ -373,13 +373,7 @@ class Redis
                "redis-namespace 2.0 (at #{call_site})")
         end
 
-        if @redis.class.name == "ConnectionPool"
-          @redis.with do |pool_connection|
-            pool_connection.send(command, *args, &block)
-          end
-        else
-          @redis.send(command, *args, &block)
-        end
+        wrapped_send(@redis, command, args, &block)
       else
         super
       end
@@ -484,14 +478,7 @@ class Redis
       end
 
       # Dispatch the command to Redis and store the result.
-      result = nil
-      if @redis.class.name == "ConnectionPool"
-        @redis.with do |pool_connection|
-          result = pool_connection.send(command, *args, &block)
-        end
-      else
-        result = @redis.send(command, *args, &block)
-      end
+      result = wrapped_send(@redis, command, args, &block)
 
       # Don't try to remove namespace from a Redis::Future, you can't.
       return result if result.is_a?(Redis::Future)
@@ -528,6 +515,16 @@ class Redis
       end
     end
 
+    def wrapped_send(redis_client, command, args = [], &block)
+      if redis_client.class.name == "ConnectionPool"
+        redis_client.with do |pool_connection|
+          pool_connection.send(command, *args, &block)
+        end
+      else
+        redis_client.send(command, *args, &block)
+      end
+    end
+
     # Avoid modifying the caller's (pass-by-reference) arguments.
     def clone_args(arg)
       if arg.is_a?(Array)
@@ -545,29 +542,10 @@ class Redis
 
     def namespaced_block(command, &block)
       if block.arity == 0
-        if redis.class.name == "ConnectionPool"
-          redis.with do |pool_connection|
-            pool_connection.send(command, &block)
-          end
-        else
-          redis.send(command, &block)
-        end
+        wrapped_send(redis, command, &block)
       else
-        if redis.class.name == "ConnectionPool"
-          redis.with do |pool_connection|
-            pool_connection.send(command) do |r|
-              copy = dup
-              copy.redis = r
-              yield copy
-            end
-          end
-        else
-          redis.send(command) do |r|
-            copy = dup
-            copy.redis = r
-            yield copy
-          end
-        end
+        outer_block = proc { |r| copy = dup; copy.redis = r; yield copy }
+        wrapped_send(redis, command, &outer_block)
       end
     end
 
