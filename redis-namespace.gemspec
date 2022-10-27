@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "rspec", "~> 3.7"
   s.add_development_dependency "rspec-its"
+  s.add_development_dependency "connection_pool"
 
   s.description = <<description
 Adds a Redis::Namespace class which can be used to namespace calls

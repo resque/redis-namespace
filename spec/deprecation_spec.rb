@@ -31,7 +31,7 @@ describe Redis::Namespace do
     end
 
     before(:each) do
-      allow(redis).to receive(:unhandled) do |*args| 
+      allow(redis).to receive(:unhandled) do |*args|
         "unhandled(#{args.inspect})"
       end
       allow(redis).to receive(:flushdb).and_return("OK")
