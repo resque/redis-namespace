@@ -358,6 +358,11 @@ describe "redis" do
     expect(values).to match_array(['banana', 'eggplant'])
   end
 
+  it "should add a new member" do
+    expect(@namespaced.sadd?('foo', 1)).to eq(true)
+    expect(@namespaced.sadd?('foo', 1)).to eq(false)
+  end
+
   it "should add namespace to sort" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
