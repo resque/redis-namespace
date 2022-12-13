@@ -240,6 +240,7 @@ class Redis
     # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
     Enumerator = Enumerable::Enumerator unless defined?(::Enumerator)
 
+    # This is used by the Redis gem to determine whether or not to display that deprecation message.
     @sadd_returns_boolean = true
 
     class << self
