@@ -138,6 +138,7 @@ class Redis
       "rpush"            => [ :first ],
       "rpushx"           => [ :first ],
       "sadd"             => [ :first ],
+      "sadd?"             => [ :first ],
       "scard"            => [ :first ],
       "scan"             => [ :scan_style, :second ],
       "scan_each"        => [ :scan_style, :all ],
@@ -238,6 +239,13 @@ class Redis
 
     # Support 1.8.7 by providing a namespaced reference to Enumerable::Enumerator
     Enumerator = Enumerable::Enumerator unless defined?(::Enumerator)
+
+    # This is used by the Redis gem to determine whether or not to display that deprecation message.
+    @sadd_returns_boolean = true
+
+    class << self
+      attr_accessor :sadd_returns_boolean
+    end
 
     attr_writer :namespace
     attr_reader :redis
