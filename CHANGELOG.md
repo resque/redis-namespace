@@ -1,9 +1,13 @@
 ## master
 
-## x.y.z
+## 1.10.0
 
-- Add ability to clear namespaces (#202). This operation can run for a very long time if the namespace contains
-  lots of keys! It should be used in tests, or when the namespace is small enough and you are sure you know what you are doing.
+- Bump actions/checkout from 2 to 3 (#206)
+- Allow Redis#close (#209)
+- Remove broken link to source code in gemspec (#214)
+- Add support for `connection_pool` gem (#215)
+- Add `sadd_returns_boolean` + `sadd?` method (#217)
+- Add ability to clear namespaces (#202). This operation can run for a very long time if the namespace contains lots of keys! It should be used in tests, or when the namespace is small enough and you are sure you know what you are doing.
 
 ## 1.9.0
 
