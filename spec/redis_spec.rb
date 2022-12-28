@@ -1061,6 +1061,13 @@ describe "redis" do
     end
   end
 
+  if @redis_version >= Gem::Version.new("3.2.0")
+    it 'should namespace bitfield' do
+      @namespaced.bitfield("bf", "SET", "i8", 0, "A".ord)
+      expect(@redis.get("ns:bf")).to eq("A")
+    end
+  end
+
   describe :full_namespace do
     it "should return the full namespace including sub namespaces" do
       sub_namespaced     = Redis::Namespace.new(:sub1, :redis => @namespaced)

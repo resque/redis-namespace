@@ -56,6 +56,7 @@ class Redis
     NAMESPACED_COMMANDS = {
       "append"           => [ :first ],
       "bitcount"         => [ :first ],
+      "bitfield"         => [ :first ],
       "bitop"            => [ :exclude_first ],
       "bitpos"           => [ :first ],
       "blpop"            => [ :exclude_last, :first ],
