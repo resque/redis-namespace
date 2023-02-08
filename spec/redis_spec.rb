@@ -660,6 +660,12 @@ describe "redis" do
         expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
       end
 
+      it "should namespace expiretime" do
+        @namespaced.set('mykey', 'Hello')
+        @namespaced.expireat('mykey', 2000000000)
+        expect(@namespaced.expiretime('mykey')).to eq(2000000000)
+      end
+
       it "should namespace hincrbyfloat" do
         @namespaced.hset('mykey', 'field', 10.50)
         expect(@namespaced.hincrbyfloat('mykey', 'field', 0.1)).to eq(10.6)
@@ -690,6 +696,12 @@ describe "redis" do
       it "should namespace pexpireat" do
         @namespaced.set('mykey', 'Hello')
         expect(@namespaced.pexpire('mykey', 1555555555005)).to eq(true)
+      end
+
+      it "should namespace pexpiretime" do
+        @namespaced.set('mykey', 'Hello')
+        @namespaced.pexpireat('mykey', 2000000000000)
+        expect(@namespaced.pexpiretime('mykey')).to eq(2000000000000)
       end
 
       it "should namespace psetex" do
