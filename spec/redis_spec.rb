@@ -363,6 +363,12 @@ describe "redis" do
     expect(@namespaced.sadd?('foo', 1)).to eq(false)
   end
 
+  it "should remove members" do
+    @namespaced.sadd('foo', 1)
+    expect(@namespaced.srem?('foo', 1)).to eq(true)
+    expect(@namespaced.srem?('foo', 1)).to eq(false)
+  end
+
   it "should add namespace to sort" do
     @namespaced.sadd('foo', 1)
     @namespaced.sadd('foo', 2)
