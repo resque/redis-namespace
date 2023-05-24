@@ -248,7 +248,7 @@ class Redis
     @srem_returns_boolean = true
 
     class << self
-      attr_accessor :sadd_returns_boolean, srem_returns_boolean
+      attr_accessor :sadd_returns_boolean, :srem_returns_boolean
     end
 
     attr_writer :namespace
