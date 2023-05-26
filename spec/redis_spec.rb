@@ -364,7 +364,7 @@ describe "redis" do
   end
 
   it "should remove members" do
-    @namespaced.sadd?('foo', 1)
+    @namespaced.sadd('foo', 1)
     expect(@namespaced.srem?('foo', 1)).to eq(true)
     expect(@namespaced.srem?('foo', 1)).to eq(false)
   end
