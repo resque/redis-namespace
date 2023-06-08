@@ -1,5 +1,12 @@
 ## master
 
+## 1.11.0
+
+- CI: Name the test job for clearer output (#219)
+- Fix `srem?` not being namespaced (#223)
+- FIX missing namespaced srem? method (#224)
+- Add support for expiretime and pexpiretime (#221)
+
 ## 1.10.0
 
 - Bump actions/checkout from 2 to 3 (#206)
