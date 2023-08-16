@@ -454,6 +454,7 @@ class Redis
       # Add the namespace to any parameters that are keys.
       case before
       when :first
+        args.flatten!
         args[0] = add_namespace(args[0]) if args[0]
         args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
       when :all
