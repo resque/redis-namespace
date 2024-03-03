@@ -100,6 +100,12 @@ describe "redis" do
     expect(@redis.get('foo')).to eq('bar')
   end
 
+  it 'should be able to use a namespace with lpos' do
+    @namespaced.rpush('foo', %w[a b c 1 2 3 c c])
+    expect(@namespaced.lpos('foo', 'c')).to eq(2)
+    expect(@redis.lpos('mykey', 'c')).to be_nil
+  end
+
   it 'should be able to use a namespace with brpoplpush' do
     @namespaced.lpush('foo','bar')
     expect(@namespaced.brpoplpush('foo','bar',0)).to eq('bar')
