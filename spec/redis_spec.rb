@@ -106,6 +106,14 @@ describe "redis" do
     expect(@redis.lpos('mykey', 'c')).to be_nil
   end
 
+  it 'should be able to use a namespace with lmove' do
+    @namespaced.rpush('foo', %w[a b c 1 2 3 c c])
+    expect(@namespaced.lmove('foo', 'bar', 'LEFT', 'RIGHT')).to eq('a')
+    expect(@namespaced.lmove('foo', 'bar', 'LEFT', 'RIGHT')).to eq('b')
+    expect(@namespaced.lrange('foo', 0, -1)).to eq(%w[c 1 2 3 c c])
+    expect(@namespaced.lrange('bar', 0, -1)).to eq(%w[a b])
+  end
+
   it 'should be able to use a namespace with brpoplpush' do
     @namespaced.lpush('foo','bar')
     expect(@namespaced.brpoplpush('foo','bar',0)).to eq('bar')

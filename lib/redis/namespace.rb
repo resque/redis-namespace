@@ -103,6 +103,7 @@ class Redis
       "lindex"           => [ :first ],
       "linsert"          => [ :first ],
       "llen"             => [ :first ],
+      "lmove"            => [ :first_two ],
       "lpop"             => [ :first ],
       "lpos"             => [ :first ],
       "lpush"            => [ :first ],
@@ -456,6 +457,10 @@ class Redis
       case before
       when :first
         args[0] = add_namespace(args[0]) if args[0]
+        args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
+      when :first_two
+        args[0] = add_namespace(args[0]) if args[0]
+        args[1] = add_namespace(args[1]) if args[1]
         args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
       when :all
         args = add_namespace(args)
