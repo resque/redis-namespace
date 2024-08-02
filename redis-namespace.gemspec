@@ -21,8 +21,6 @@ Gem::Specification.new do |s|
 
   s.files             = %w( README.md Rakefile LICENSE )
   s.files            += Dir.glob("lib/**/*")
-  s.files            += Dir.glob("test/**/*")
-  s.files            += Dir.glob("spec/**/*")
 
   s.required_ruby_version = '>= 2.4'
 
