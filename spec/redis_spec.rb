@@ -113,6 +113,12 @@ describe "redis" do
     expect(@namespaced.lrange('bar',0,-1)).to eq(['bar'])
   end
 
+  it "should be able to use a namespace with getdel" do
+    expect(@namespaced.set('mykey', 'Hello')).to eq('OK')
+    expect(@namespaced.getdel('mykey')).to eq('Hello')
+    expect(@namespaced.get('mykey')).to be_nil
+  end
+
   it "should be able to use a namespace with getex" do
     expect(@namespaced.set('mykey', 'Hello')).to eq('OK')
     expect(@namespaced.getex('mykey', ex: 50)).to eq('Hello')
