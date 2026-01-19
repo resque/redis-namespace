@@ -20,4 +20,10 @@ platforms :rbx do
   gem 'rubysl-stringio'
 end
 
+platforms :ruby do
+  install_if -> { RUBY_VERSION[0] == '4' } do
+    gem 'logger'
+  end
+end
+
 gemspec
