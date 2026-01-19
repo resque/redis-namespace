@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   test:
     name: "Test on Redis ${{ matrix.redis-version }}, Ruby ${{ matrix.ruby-version }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
