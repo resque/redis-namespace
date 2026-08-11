@@ -40,6 +40,16 @@ redis_connection = Redis.new
 namespaced_redis = Redis::Namespace.new(Proc.new { Tenant.current_tenant }, redis: redis_connection)
 ```
 
+Requirements
+============
+
+Redis::Namespace requires Ruby 2.4+, and is tested against Ruby versions up to and including 4.0.
+
+It depends on the [redis-rb][] gem, pinned to `>= 4.8, < 5`. redis-rb 5.x and 6.x reworked several
+commands (e.g. `multi`, `pipelined`, `blpop`) around keyword arguments and new connection
+internals that this gem's argument-namespacing layer doesn't yet handle correctly, so newer
+major versions are intentionally excluded until that support is added.
+
 Installation
 ============
 

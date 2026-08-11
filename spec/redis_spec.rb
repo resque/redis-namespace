@@ -1,11 +1,10 @@
-# encoding: utf-8
-
-require File.dirname(__FILE__) + '/spec_helper'
+require "#{File.dirname(__FILE__)}/spec_helper"
 require 'connection_pool'
+require 'stringio'
 
 describe "redis" do
   @redis_version = Gem::Version.new(Redis.new.info["redis_version"])
-  let(:redis_client) { @redis.respond_to?(:_client) ? @redis._client : @redis.client}
+  let(:redis_client) { @redis.respond_to?(:_client) ? @redis._client : @redis.client }
 
   before(:each) do
     # use database 15 for testing so we dont accidentally step on your real data
@@ -23,6 +22,13 @@ describe "redis" do
 
   it "proxies `client` to the _client and deprecated" do
     expect(@namespaced.client).to eq(redis_client)
+  end
+
+  it "warns that `client` is deprecated when deprecations are enabled" do
+    namespaced = Redis::Namespace.new(:ns, redis: @redis, deprecations: true)
+    capture_stderr(stderr = StringIO.new) { namespaced.client }
+    warning = stderr.tap(&:rewind).read
+    expect(warning).to include('The client method is deprecated')
   end
 
   it "proxies `_client` to the _client" do
@@ -43,7 +49,7 @@ describe "redis" do
   end
 
   it "should work with Proc namespaces" do
-    namespace = Proc.new { :dynamic_ns }
+    namespace = proc { :dynamic_ns }
     namespaced = Redis::Namespace.new(namespace, redis: @redis)
 
     expect(namespaced.get('foo')).to eq(nil)
@@ -65,9 +71,9 @@ describe "redis" do
     @namespaced.rpush "foo", "string"
     @namespaced.rpush "foo", "ns:string"
     @namespaced.rpush "foo", "string_no_timeout"
-    expect(@namespaced.blpop("foo", 1)).to eq(["foo", "string"])
+    expect(@namespaced.blpop("foo", 1)).to eq(%w[foo string])
     expect(@namespaced.blpop("foo", 1)).to eq(["foo", "ns:string"])
-    expect(@namespaced.blpop("foo")).to eq(["foo", "string_no_timeout"])
+    expect(@namespaced.blpop("foo")).to eq(%w[foo string_no_timeout])
     expect(@namespaced.blpop("foo", 1)).to eq(nil)
   end
 
@@ -95,7 +101,7 @@ describe "redis" do
 
   it 'should be able to use a namespace with append' do
     @namespaced.set('foo', 'bar')
-    expect(@namespaced.append('foo','n')).to eq(4)
+    expect(@namespaced.append('foo', 'n')).to eq(4)
     expect(@namespaced.get('foo')).to eq('barn')
     expect(@redis.get('foo')).to eq('bar')
   end
@@ -107,10 +113,10 @@ describe "redis" do
   end
 
   it 'should be able to use a namespace with brpoplpush' do
-    @namespaced.lpush('foo','bar')
-    expect(@namespaced.brpoplpush('foo','bar',0)).to eq('bar')
-    expect(@namespaced.lrange('foo',0,-1)).to eq([])
-    expect(@namespaced.lrange('bar',0,-1)).to eq(['bar'])
+    @namespaced.lpush('foo', 'bar')
+    expect(@namespaced.brpoplpush('foo', 'bar', 0)).to eq('bar')
+    expect(@namespaced.lrange('foo', 0, -1)).to eq([])
+    expect(@namespaced.lrange('bar', 0, -1)).to eq(['bar'])
   end
 
   it "should be able to use a namespace with getex" do
@@ -121,41 +127,41 @@ describe "redis" do
   end
 
   it 'should be able to use a namespace with getbit' do
-    @namespaced.set('foo','bar')
-    expect(@namespaced.getbit('foo',1)).to eq(1)
+    @namespaced.set('foo', 'bar')
+    expect(@namespaced.getbit('foo', 1)).to eq(1)
   end
 
   it 'should be able to use a namespace with getrange' do
-    @namespaced.set('foo','bar')
-    expect(@namespaced.getrange('foo',0,-1)).to eq('bar')
+    @namespaced.set('foo', 'bar')
+    expect(@namespaced.getrange('foo', 0, -1)).to eq('bar')
   end
 
   it 'should be able to use a namespace with linsert' do
-    @namespaced.rpush('foo','bar')
-    @namespaced.rpush('foo','barn')
-    @namespaced.rpush('foo','bart')
-    expect(@namespaced.linsert('foo','BEFORE','barn','barf')).to eq(4)
-    expect(@namespaced.lrange('foo',0,-1)).to eq(['bar','barf','barn','bart'])
+    @namespaced.rpush('foo', 'bar')
+    @namespaced.rpush('foo', 'barn')
+    @namespaced.rpush('foo', 'bart')
+    expect(@namespaced.linsert('foo', 'BEFORE', 'barn', 'barf')).to eq(4)
+    expect(@namespaced.lrange('foo', 0, -1)).to eq(%w[bar barf barn bart])
   end
 
   it 'should be able to use a namespace with lpushx' do
-    expect(@namespaced.lpushx('foo','bar')).to eq(0)
-    @namespaced.lpush('foo','boo')
-    expect(@namespaced.lpushx('foo','bar')).to eq(2)
-    expect(@namespaced.lrange('foo',0,-1)).to eq(['bar','boo'])
+    expect(@namespaced.lpushx('foo', 'bar')).to eq(0)
+    @namespaced.lpush('foo', 'boo')
+    expect(@namespaced.lpushx('foo', 'bar')).to eq(2)
+    expect(@namespaced.lrange('foo', 0, -1)).to eq(%w[bar boo])
   end
 
   it 'should be able to use a namespace with rpushx' do
-    expect(@namespaced.rpushx('foo','bar')).to eq(0)
-    @namespaced.lpush('foo','boo')
-    expect(@namespaced.rpushx('foo','bar')).to eq(2)
-    expect(@namespaced.lrange('foo',0,-1)).to eq(['boo','bar'])
+    expect(@namespaced.rpushx('foo', 'bar')).to eq(0)
+    @namespaced.lpush('foo', 'boo')
+    expect(@namespaced.rpushx('foo', 'bar')).to eq(2)
+    expect(@namespaced.lrange('foo', 0, -1)).to eq(%w[boo bar])
   end
 
   it 'should be able to use a namespace with setbit' do
     @namespaced.setbit('virgin_key', 1, 1)
     expect(@namespaced.exists?('virgin_key')).to be true
-    expect(@namespaced.get('virgin_key')).to eq(@namespaced.getrange('virgin_key',0,-1))
+    expect(@namespaced.get('virgin_key')).to eq(@namespaced.getrange('virgin_key', 0, -1))
   end
 
   it 'should be able to use a namespace with exists' do
@@ -188,7 +194,7 @@ describe "redis" do
     @namespaced.set('foo', 1000)
     @namespaced.set('bar', 2000)
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
-    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({'foo'=>'1000', 'bar'=>'2000', 'baz' => nil})
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil })
   end
 
   it "should utilize connection_pool while using a namespace with mget" do
@@ -203,8 +209,8 @@ describe "redis" do
     @namespaced.set('foo', 1000)
     @namespaced.set('bar', 2000)
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
-    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({'foo'=>'1000', 'bar'=>'2000', 'baz' => nil})
-    @redis.get('foo').should eq('bar')
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil })
+    expect(@redis.get('foo')).to eq('bar')
 
     @namespaced = memo
   end
@@ -212,30 +218,30 @@ describe "redis" do
   it "should be able to use a namespace with mset" do
     @namespaced.mset('foo', '1000', 'bar', '2000')
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
-    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil})
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil })
 
     @namespaced.mapped_mset('foo' => '3000', 'bar' => '5000')
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '3000', 'bar' => '5000' })
-    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '3000', 'bar' => '5000', 'baz' => nil})
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '3000', 'bar' => '5000', 'baz' => nil })
 
-    @namespaced.mset(['foo', '4000'], ['baz', '6000'])
+    @namespaced.mset(%w[foo 4000], %w[baz 6000])
     expect(@namespaced.mapped_mget('foo', 'bar', 'baz')).to eq({ 'foo' => '4000', 'bar' => '5000', 'baz' => '6000' })
   end
 
   it "should be able to use a namespace with msetnx" do
     @namespaced.msetnx('foo', '1000', 'bar', '2000')
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000' })
-    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil})
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => nil })
 
-    @namespaced.msetnx(['baz', '4000'])
-    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => '4000'})
+    @namespaced.msetnx(%w[baz 4000])
+    expect(@namespaced.mapped_mget('foo', 'baz', 'bar')).to eq({ 'foo' => '1000', 'bar' => '2000', 'baz' => '4000' })
   end
 
   it "should be able to use a namespace with mapped_msetnx" do
-    @namespaced.set('foo','1')
-    expect(@namespaced.mapped_msetnx('foo'=>'1000', 'bar'=>'2000')).to be false
+    @namespaced.set('foo', '1')
+    expect(@namespaced.mapped_msetnx('foo' => '1000', 'bar' => '2000')).to be false
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1', 'bar' => nil })
-    expect(@namespaced.mapped_msetnx('bar'=>'2000', 'baz'=>'1000')).to be true
+    expect(@namespaced.mapped_msetnx('bar' => '2000', 'baz' => '1000')).to be true
     expect(@namespaced.mapped_mget('foo', 'bar')).to eq({ 'foo' => '1', 'bar' => '2000' })
   end
 
@@ -243,25 +249,26 @@ describe "redis" do
     @namespaced.hset('foo', 'key', 'value')
     @namespaced.hset('foo', 'key1', 'value1')
     expect(@namespaced.hget('foo', 'key')).to eq('value')
-    expect(@namespaced.hgetall('foo')).to eq({'key' => 'value', 'key1' => 'value1'})
+    expect(@namespaced.hgetall('foo')).to eq({ 'key' => 'value', 'key1' => 'value1' })
     expect(@namespaced.hlen('foo')).to eq(2)
-    expect(@namespaced.hkeys('foo')).to eq(['key', 'key1'])
+    expect(@namespaced.hkeys('foo')).to eq(%w[key key1])
     @namespaced.hmset('bar', 'key', 'value', 'key1', 'value1')
     @namespaced.hmget('bar', 'key', 'key1')
     @namespaced.hmset('bar', 'a_number', 1)
     expect(@namespaced.hmget('bar', 'a_number')).to eq(['1'])
     @namespaced.hincrby('bar', 'a_number', 3)
     expect(@namespaced.hmget('bar', 'a_number')).to eq(['4'])
-    expect(@namespaced.hgetall('bar')).to eq({'key' => 'value', 'key1' => 'value1', 'a_number' => '4'})
+    expect(@namespaced.hgetall('bar')).to eq({ 'key' => 'value', 'key1' => 'value1', 'a_number' => '4' })
 
-    expect(@namespaced.hsetnx('foonx','nx',10)).to be true
-    expect(@namespaced.hsetnx('foonx','nx',12)).to be false
-    expect(@namespaced.hget('foonx','nx')).to eq("10")
-    expect(@namespaced.hkeys('foonx')).to eq(%w{ nx })
-    expect(@namespaced.hvals('foonx')).to eq(%w{ 10 })
-    @namespaced.mapped_hmset('baz', {'key' => 'value', 'key1' => 'value1', 'a_number' => 4})
-    expect(@namespaced.mapped_hmget('baz', 'key', 'key1', 'a_number')).to eq({'key' => 'value', 'key1' => 'value1', 'a_number' => '4'})
-    expect(@namespaced.hgetall('baz')).to eq({'key' => 'value', 'key1' => 'value1', 'a_number' => '4'})
+    expect(@namespaced.hsetnx('foonx', 'nx', 10)).to be true
+    expect(@namespaced.hsetnx('foonx', 'nx', 12)).to be false
+    expect(@namespaced.hget('foonx', 'nx')).to eq("10")
+    expect(@namespaced.hkeys('foonx')).to eq(%w[nx])
+    expect(@namespaced.hvals('foonx')).to eq(%w[10])
+    @namespaced.mapped_hmset('baz', { 'key' => 'value', 'key1' => 'value1', 'a_number' => 4 })
+    expect(@namespaced.mapped_hmget('baz', 'key', 'key1',
+                                    'a_number')).to eq({ 'key' => 'value', 'key1' => 'value1', 'a_number' => '4' })
+    expect(@namespaced.hgetall('baz')).to eq({ 'key' => 'value', 'key1' => 'value1', 'a_number' => '4' })
   end
 
   it "should properly intersect three sets" do
@@ -272,7 +279,7 @@ describe "redis" do
     @namespaced.sadd('bar', 3)
     @namespaced.sadd('bar', 4)
     @namespaced.sadd('baz', 3)
-    expect(@namespaced.sinter('foo', 'bar', 'baz')).to eq(%w( 3 ))
+    expect(@namespaced.sinter('foo', 'bar', 'baz')).to eq(%w[3])
   end
 
   it "should properly union two sets" do
@@ -281,7 +288,7 @@ describe "redis" do
     @namespaced.sadd('bar', 2)
     @namespaced.sadd('bar', 3)
     @namespaced.sadd('bar', 4)
-    expect(@namespaced.sunion('foo', 'bar').sort).to eq(%w( 1 2 3 4 ))
+    expect(@namespaced.sunion('foo', 'bar').sort).to eq(%w[1 2 3 4])
   end
 
   it "should properly union two sorted sets with options" do
@@ -290,8 +297,8 @@ describe "redis" do
     @namespaced.zadd('sort2', 2, 2)
     @namespaced.zadd('sort2', 3, 3)
     @namespaced.zadd('sort2', 4, 4)
-    @namespaced.zunionstore('union', ['sort1', 'sort2'], weights: [2, 1])
-    expect(@namespaced.zrevrange('union', 0, -1)).to eq(%w( 2 4 3 1 ))
+    @namespaced.zunionstore('union', %w[sort1 sort2], weights: [2, 1])
+    expect(@namespaced.zrevrange('union', 0, -1)).to eq(%w[2 4 3 1])
   end
 
   it "should properly union two sorted sets without options" do
@@ -300,8 +307,8 @@ describe "redis" do
     @namespaced.zadd('sort2', 2, 2)
     @namespaced.zadd('sort2', 3, 3)
     @namespaced.zadd('sort2', 4, 4)
-    @namespaced.zunionstore('union', ['sort1', 'sort2'])
-    expect(@namespaced.zrevrange('union', 0, -1)).to eq(%w( 4 2 3 1 ))
+    @namespaced.zunionstore('union', %w[sort1 sort2])
+    expect(@namespaced.zrevrange('union', 0, -1)).to eq(%w[4 2 3 1])
   end
 
   it "should properly intersect two sorted sets without options" do
@@ -313,7 +320,7 @@ describe "redis" do
     @namespaced.zadd('color', 3, 'yellow')
     @namespaced.zadd('color', 4, 'eggplant')
 
-    @namespaced.zinterstore('inter', ['food', 'color'])
+    @namespaced.zinterstore('inter', %w[food color])
 
     inter_values = @namespaced.zrevrange('inter', 0, -1, :with_scores => true)
     expect(inter_values).to match_array([['orange', 3.0], ['eggplant', 7.0]])
@@ -328,7 +335,7 @@ describe "redis" do
     @namespaced.zadd('color', 3, 'yellow')
     @namespaced.zadd('color', 4, 'eggplant')
 
-    @namespaced.zinterstore('inter', ['food', 'color'], :aggregate => "min")
+    @namespaced.zinterstore('inter', %w[food color], :aggregate => "min")
 
     inter_values = @namespaced.zrevrange('inter', 0, -1, :with_scores => true)
     expect(inter_values).to match_array([['orange', 1.0], ['eggplant', 3.0]])
@@ -340,7 +347,7 @@ describe "redis" do
     @namespaced.zadd('food', 0, 'eggplant')
 
     values = @namespaced.zrangebylex('food', '[b', '(o')
-    expect(values).to match_array(['banana', 'eggplant'])
+    expect(values).to match_array(%w[banana eggplant])
   end
 
   it "should return the number of elements removed from the set" do
@@ -361,7 +368,7 @@ describe "redis" do
     @namespaced.zadd('food', 0, 'eggplant')
 
     values = @namespaced.zrevrangebylex('food', '(o', '[b')
-    expect(values).to match_array(['banana', 'eggplant'])
+    expect(values).to match_array(%w[banana eggplant])
   end
 
   it "should add a new member" do
@@ -383,33 +390,33 @@ describe "redis" do
     @namespaced.set('value_1', 'a')
     @namespaced.set('value_2', 'b')
 
-    expect(@namespaced.sort('foo')).to eq(%w( 1 2 ))
-    expect(@namespaced.sort('foo', :limit => [0, 1])).to eq(%w( 1 ))
-    expect(@namespaced.sort('foo', :order => 'desc')).to eq(%w( 2 1 ))
-    expect(@namespaced.sort('foo', :by => 'weight_*')).to eq(%w( 2 1 ))
-    expect(@namespaced.sort('foo', :get => 'value_*')).to eq(%w( a b ))
-    expect(@namespaced.sort('foo', :get => '#')).to eq(%w( 1 2 ))
-    expect(@namespaced.sort('foo', :get => ['#', 'value_*'])).to eq([["1", "a"], ["2", "b"]])
+    expect(@namespaced.sort('foo')).to eq(%w[1 2])
+    expect(@namespaced.sort('foo', :limit => [0, 1])).to eq(%w[1])
+    expect(@namespaced.sort('foo', :order => 'desc')).to eq(%w[2 1])
+    expect(@namespaced.sort('foo', :by => 'weight_*')).to eq(%w[2 1])
+    expect(@namespaced.sort('foo', :get => 'value_*')).to eq(%w[a b])
+    expect(@namespaced.sort('foo', :get => '#')).to eq(%w[1 2])
+    expect(@namespaced.sort('foo', :get => ['#', 'value_*'])).to eq([%w[1 a], %w[2 b]])
 
     @namespaced.sort('foo', :store => 'result')
-    expect(@namespaced.lrange('result', 0, -1)).to eq(%w( 1 2 ))
+    expect(@namespaced.lrange('result', 0, -1)).to eq(%w[1 2])
   end
 
   it "should yield the correct list of keys" do
     @namespaced.set("foo", 1)
     @namespaced.set("bar", 2)
     @namespaced.set("baz", 3)
-    expect(@namespaced.keys("*").sort).to eq(%w( bar baz foo ))
-    expect(@namespaced.keys.sort).to eq(%w( bar baz foo ))
+    expect(@namespaced.keys("*").sort).to eq(%w[bar baz foo])
+    expect(@namespaced.keys.sort).to eq(%w[bar baz foo])
   end
 
   it "should add namepsace to multi blocks" do
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.mapped_hmset "foo", { "key" => "value" }
     @namespaced.multi do |r|
       r.del "foo"
-      r.mapped_hmset "foo", {"key1" => "value1"}
+      r.mapped_hmset "foo", { "key1" => "value1" }
     end
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@namespaced.hgetall("foo")).to eq({ "key1" => "value1" })
   end
 
   it "should utilize connection_pool while adding namepsace to multi blocks" do
@@ -421,26 +428,26 @@ describe "redis" do
       expect(arg).to be(an_instance_of(Redis))
     end.at_least(:once)
 
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.mapped_hmset "foo", { "key" => "value" }
     @namespaced.multi do |r|
       r.del "foo"
-      r.mapped_hmset "foo", {"key1" => "value1"}
+      r.mapped_hmset "foo", { "key1" => "value1" }
     end
     expect(@redis.get("foo")).to eq("bar")
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@namespaced.hgetall("foo")).to eq({ "key1" => "value1" })
 
     @namespaced = memo
   end
 
   it "should pass through multi commands without block" do
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.mapped_hmset "foo", { "key" => "value" }
 
     @namespaced.multi
     @namespaced.del "foo"
-    @namespaced.mapped_hmset "foo", {"key1" => "value1"}
+    @namespaced.mapped_hmset "foo", { "key1" => "value1" }
     @namespaced.exec
 
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@namespaced.hgetall("foo")).to eq({ "key1" => "value1" })
   end
 
   it "should utilize connection_pool while passing through multi commands without block" do
@@ -452,14 +459,14 @@ describe "redis" do
       expect(arg).to be(an_instance_of(Redis))
     end.at_least(:once)
 
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.mapped_hmset "foo", { "key" => "value" }
 
     @namespaced.multi
     @namespaced.del "foo"
-    @namespaced.mapped_hmset "foo", {"key1" => "value1"}
+    @namespaced.mapped_hmset "foo", { "key1" => "value1" }
     @namespaced.exec
 
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@namespaced.hgetall("foo")).to eq({ "key1" => "value1" })
     expect(@redis.get("foo")).to eq("bar")
 
     @namespaced = memo
@@ -473,12 +480,12 @@ describe "redis" do
   end
 
   it "should add namespace to pipelined blocks" do
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.mapped_hmset "foo", { "key" => "value" }
     @namespaced.pipelined do |r|
       r.del "foo"
-      r.mapped_hmset "foo", {"key1" => "value1"}
+      r.mapped_hmset "foo", { "key1" => "value1" }
     end
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@namespaced.hgetall("foo")).to eq({ "key1" => "value1" })
   end
 
   it "should utilize connection_pool while adding namespace to pipelined blocks" do
@@ -490,12 +497,12 @@ describe "redis" do
       expect(arg).to be(an_instance_of(Redis))
     end.at_least(:once)
 
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+    @namespaced.mapped_hmset "foo", { "key" => "value" }
     @namespaced.pipelined do |r|
       r.del "foo"
-      r.mapped_hmset "foo", {"key1" => "value1"}
+      r.mapped_hmset "foo", { "key1" => "value1" }
     end
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    expect(@namespaced.hgetall("foo")).to eq({ "key1" => "value1" })
     expect(@redis.get("foo")).to eq("bar")
 
     @namespaced = memo
@@ -507,7 +514,7 @@ describe "redis" do
       r.get("foo")
       r.get("key")
     end
-    expect(result).to eq(["bar", "value"])
+    expect(result).to eq(%w[bar value])
   end
 
   it "is thread safe for multi blocks" do
@@ -587,6 +594,18 @@ describe "redis" do
     expect { @namespaced.unknown('foo') }.to raise_exception NoMethodError
   end
 
+  it "should raise an exception when call_with_namespace is given an unhandled command" do
+    expect { @namespaced.call_with_namespace(:bogus, 'foo') }
+      .to raise_exception(RuntimeError, "Redis::Namespace does not know how to handle 'bogus'.")
+  end
+
+  it "should respond to known commands regardless of case, via respond_to_missing?" do
+    # Every known command is defined as a real (lowercase) method, so
+    # querying with different case exercises the respond_to_missing?
+    # fallback rather than Ruby's built-in method lookup.
+    expect(@namespaced.respond_to?(:SET)).to eq(true)
+  end
+
   describe '#inspect' do
     let(:single_level_names) { %i[first] }
     let(:double_level_names) { %i[first second] }
@@ -661,21 +680,21 @@ describe "redis" do
 
         expect(@namespaced.restore("foo", 1000, v)).to be_truthy
         expect(@redis.get("ns:foo")).to eq 'a'
-        expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
+        expect(@redis.ttl("ns:foo")).to(satisfy { |v| (0..1).include?(v) })
 
-        @redis.rpush("ns:bar", %w(b c d))
+        @redis.rpush("ns:bar", %w[b c d])
         w = @namespaced.dump("bar")
         @redis.del("ns:bar")
 
         expect(@namespaced.restore("bar", 1000, w)).to be_truthy
-        expect(@redis.lrange('ns:bar', 0, -1)).to eq %w(b c d)
-        expect(@redis.ttl("ns:foo")).to satisfy {|v| (0..1).include?(v) }
+        expect(@redis.lrange('ns:bar', 0, -1)).to eq %w[b c d]
+        expect(@redis.ttl("ns:foo")).to(satisfy { |v| (0..1).include?(v) })
       end
 
       it "should namespace expiretime" do
         @namespaced.set('mykey', 'Hello')
-        @namespaced.expireat('mykey', 2000000000)
-        expect(@namespaced.expiretime('mykey')).to eq(2000000000)
+        @namespaced.expireat('mykey', 2_000_000_000)
+        expect(@namespaced.expiretime('mykey')).to eq(2_000_000_000)
       end
 
       it "should namespace hincrbyfloat" do
@@ -702,22 +721,22 @@ describe "redis" do
 
       it "should namespace pexpire" do
         @namespaced.set('mykey', 'Hello')
-        expect(@namespaced.pexpire('mykey', 60000)).to eq(true)
+        expect(@namespaced.pexpire('mykey', 60_000)).to eq(true)
       end
 
       it "should namespace pexpireat" do
         @namespaced.set('mykey', 'Hello')
-        expect(@namespaced.pexpire('mykey', 1555555555005)).to eq(true)
+        expect(@namespaced.pexpire('mykey', 1_555_555_555_005)).to eq(true)
       end
 
       it "should namespace pexpiretime" do
         @namespaced.set('mykey', 'Hello')
-        @namespaced.pexpireat('mykey', 2000000000000)
-        expect(@namespaced.pexpiretime('mykey')).to eq(2000000000000)
+        @namespaced.pexpireat('mykey', 2_000_000_000_000)
+        expect(@namespaced.pexpiretime('mykey')).to eq(2_000_000_000_000)
       end
 
       it "should namespace psetex" do
-        expect(@namespaced.psetex('mykey', 10000, 'Hello')).to eq('OK')
+        expect(@namespaced.psetex('mykey', 10_000, 'Hello')).to eq('OK')
         expect(@namespaced.get('mykey')).to eq('Hello')
       end
 
@@ -728,23 +747,23 @@ describe "redis" do
       end
 
       it "should namespace eval keys passed in as array args" do
-        expect(@namespaced.
-          eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2])).
-          to eq(%w[ns:k1 ns:k2])
+        expect(@namespaced
+          .eval("return {KEYS[1], KEYS[2]}", %w[k1 k2], %w[arg1 arg2]))
+          .to eq(%w[ns:k1 ns:k2])
       end
 
       it "should namespace eval keys passed in as hash args" do
-        expect(@namespaced.
-          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2])).
-          to eq(%w[ns:k1 ns:k2])
+        expect(@namespaced
+          .eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]))
+          .to eq(%w[ns:k1 ns:k2])
       end
 
       it "should namespace eval keys passed in as hash args unmodified" do
         args = { :keys => %w[k1 k2], :argv => %w[arg1 arg2] }
         args.freeze
-        expect(@namespaced.
-          eval("return {KEYS[1], KEYS[2]}", args)).
-          to eq(%w[ns:k1 ns:k2])
+        expect(@namespaced
+          .eval("return {KEYS[1], KEYS[2]}", args))
+          .to eq(%w[ns:k1 ns:k2])
       end
 
       context '#evalsha' do
@@ -753,23 +772,23 @@ describe "redis" do
         end
 
         it "should namespace evalsha keys passed in as array args" do
-          expect(@namespaced.
-            evalsha(sha, %w[k1 k2], %w[arg1 arg2])).
-            to eq(%w[ns:k1 ns:k2])
+          expect(@namespaced
+            .evalsha(sha, %w[k1 k2], %w[arg1 arg2]))
+            .to eq(%w[ns:k1 ns:k2])
         end
 
         it "should namespace evalsha keys passed in as hash args" do
-          expect(@namespaced.
-            evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2])).
-            to eq(%w[ns:k1 ns:k2])
+          expect(@namespaced
+            .evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]))
+            .to eq(%w[ns:k1 ns:k2])
         end
 
         it "should namespace evalsha keys passed in as hash args unmodified" do
           args = { :keys => %w[k1 k2], :argv => %w[arg1 arg2] }
           args.freeze
-          expect(@namespaced.
-            evalsha(sha, args)).
-            to eq(%w[ns:k1 ns:k2])
+          expect(@namespaced
+            .evalsha(sha, args))
+            .to eq(%w[ns:k1 ns:k2])
         end
       end
 
@@ -778,13 +797,13 @@ describe "redis" do
         let(:sha) { @redis.script(:load, "return {KEYS[1], KEYS[2]}") }
 
         it "should namespace eval keys passed in as hash args" do
-          expect(nested_namespace.
-          eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2])).
-          to eq(%w[ns:nest:k1 ns:nest:k2])
+          expect(nested_namespace
+          .eval("return {KEYS[1], KEYS[2]}", :keys => %w[k1 k2], :argv => %w[arg1 arg2]))
+            .to eq(%w[ns:nest:k1 ns:nest:k2])
         end
         it "should namespace evalsha keys passed in as hash args" do
-          expect(nested_namespace.evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2])).
-            to eq(%w[ns:nest:k1 ns:nest:k2])
+          expect(nested_namespace.evalsha(sha, :keys => %w[k1 k2], :argv => %w[arg1 arg2]))
+            .to eq(%w[ns:nest:k1 ns:nest:k2])
         end
       end
     end
@@ -795,10 +814,10 @@ describe "redis" do
     describe "redis 2.8 commands" do
       context 'keyspace scan methods' do
         let(:keys) do
-          %w(alpha ns:beta gamma ns:delta ns:epsilon ns:zeta:one ns:zeta:two ns:theta)
+          %w[alpha ns:beta gamma ns:delta ns:epsilon ns:zeta:one ns:zeta:two ns:theta]
         end
         let(:namespaced_keys) do
-          keys.map{|k| k.dup.sub!(/\Ans:/,'') }.compact.sort
+          keys.map { |k| k.dup.sub!(/\Ans:/, '') }.compact.sort
         end
         before(:each) do
           keys.each do |key|
@@ -806,117 +825,125 @@ describe "redis" do
           end
         end
         let(:matching_namespaced_keys) do
-          namespaced_keys.select{|k| k[/\Azeta:/] }.compact.sort
+          namespaced_keys.select { |k| k[/\Azeta:/] }.compact.sort
         end
 
-        context '#scan' do
-          context 'when :match supplied' do
-            it 'should retrieve the proper keys' do
-              _, result = @namespaced.scan(0, :match => 'zeta:*', :count => 1000)
-              expect(result).to match_array(matching_namespaced_keys)
+        if Redis.new.respond_to?(:scan)
+          context '#scan' do
+            context 'when :match supplied' do
+              it 'should retrieve the proper keys' do
+                _, result = @namespaced.scan(0, :match => 'zeta:*', :count => 1000)
+                expect(result).to match_array(matching_namespaced_keys)
+              end
+            end
+            context 'without :match supplied' do
+              it 'should retrieve the proper keys' do
+                _, result = @namespaced.scan(0, :count => 1000)
+                expect(result).to match_array(namespaced_keys)
+              end
             end
           end
-          context 'without :match supplied' do
-            it 'should retrieve the proper keys' do
-              _, result = @namespaced.scan(0, :count => 1000)
-              expect(result).to match_array(namespaced_keys)
-            end
-          end
-        end if Redis.new.respond_to?(:scan)
+        end
 
-        context '#scan_each' do
-          context 'when :match supplied' do
-            context 'when given a block' do
-              it 'should yield unnamespaced' do
-                results = []
-                @namespaced.scan_each(:match => 'zeta:*', :count => 1000) {|k| results << k }
-                expect(results).to match_array(matching_namespaced_keys)
+        if Redis.new.respond_to?(:scan_each)
+          context '#scan_each' do
+            context 'when :match supplied' do
+              context 'when given a block' do
+                it 'should yield unnamespaced' do
+                  results = []
+                  @namespaced.scan_each(:match => 'zeta:*', :count => 1000) { |k| results << k }
+                  expect(results).to match_array(matching_namespaced_keys)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that un-namespaces' do
+                  enum = @namespaced.scan_each(:match => 'zeta:*', :count => 1000)
+                  expect(enum.to_a).to match_array(matching_namespaced_keys)
+                end
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that un-namespaces' do
-                enum = @namespaced.scan_each(:match => 'zeta:*', :count => 1000)
-                expect(enum.to_a).to match_array(matching_namespaced_keys)
+            context 'without :match supplied' do
+              context 'when given a block' do
+                it 'should yield unnamespaced' do
+                  results = []
+                  @namespaced.scan_each(:count => 1000) { |k| results << k }
+                  expect(results).to match_array(namespaced_keys)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that un-namespaces' do
+                  enum = @namespaced.scan_each(:count => 1000)
+                  expect(enum.to_a).to match_array(namespaced_keys)
+                end
               end
             end
           end
-          context 'without :match supplied' do
-            context 'when given a block' do
-              it 'should yield unnamespaced' do
-                results = []
-                @namespaced.scan_each(:count => 1000){ |k| results << k }
-                expect(results).to match_array(namespaced_keys)
-              end
-            end
-            context 'without a block' do
-              it 'should return an Enumerator that un-namespaces' do
-                enum = @namespaced.scan_each(:count => 1000)
-                expect(enum.to_a).to match_array(namespaced_keys)
-              end
-            end
-          end
-        end if Redis.new.respond_to?(:scan_each)
+        end
       end
 
       context 'hash scan methods' do
         before(:each) do
-          @redis.mapped_hmset('hsh', {'zeta:wrong:one' => 'WRONG', 'wrong:two' => 'WRONG'})
+          @redis.mapped_hmset('hsh', { 'zeta:wrong:one' => 'WRONG', 'wrong:two' => 'WRONG' })
           @redis.mapped_hmset('ns:hsh', hash)
         end
         let(:hash) do
-          {'zeta:one' => 'OK', 'zeta:two' => 'OK', 'three' => 'OKAY'}
+          { 'zeta:one' => 'OK', 'zeta:two' => 'OK', 'three' => 'OKAY' }
         end
         let(:hash_matching_subset) do
           # select is not consistent from 1.8.7 -> 1.9.2 :(
-          hash.reject {|k,v| !k[/\Azeta:/] }
+          hash.select { |k, _v| k[/\Azeta:/] }
         end
-        context '#hscan' do
-          context 'when supplied :match' do
-            it 'should retrieve the proper keys' do
-              _, results = @namespaced.hscan('hsh', 0, :match => 'zeta:*')
-              expect(results).to match_array(hash_matching_subset.to_a)
-            end
-          end
-          context 'without :match supplied' do
-            it 'should retrieve all hash keys' do
-              _, results = @namespaced.hscan('hsh', 0)
-              expect(results).to match_array(@redis.hgetall('ns:hsh').to_a)
-            end
-          end
-        end if Redis.new.respond_to?(:hscan)
-
-        context '#hscan_each' do
-          context 'when :match supplied' do
-            context 'when given a block' do
-              it 'should yield the correct hash keys unchanged' do
-                results = []
-                @namespaced.hscan_each('hsh', :match => 'zeta:*', :count => 1000) { |kv| results << kv}
+        if Redis.new.respond_to?(:hscan)
+          context '#hscan' do
+            context 'when supplied :match' do
+              it 'should retrieve the proper keys' do
+                _, results = @namespaced.hscan('hsh', 0, :match => 'zeta:*')
                 expect(results).to match_array(hash_matching_subset.to_a)
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that yields the correct hash keys unchanged' do
-                enum = @namespaced.hscan_each('hsh', :match => 'zeta:*', :count => 1000)
-                expect(enum.to_a).to match_array(hash_matching_subset.to_a)
+            context 'without :match supplied' do
+              it 'should retrieve all hash keys' do
+                _, results = @namespaced.hscan('hsh', 0)
+                expect(results).to match_array(@redis.hgetall('ns:hsh').to_a)
               end
             end
           end
-          context 'without :match supplied' do
-            context 'when given a block' do
-              it 'should yield all hash keys unchanged' do
-                results = []
-                @namespaced.hscan_each('hsh', :count => 1000){ |k| results << k }
-                expect(results).to match_array(hash.to_a)
+        end
+
+        if Redis.new.respond_to?(:hscan_each)
+          context '#hscan_each' do
+            context 'when :match supplied' do
+              context 'when given a block' do
+                it 'should yield the correct hash keys unchanged' do
+                  results = []
+                  @namespaced.hscan_each('hsh', :match => 'zeta:*', :count => 1000) { |kv| results << kv }
+                  expect(results).to match_array(hash_matching_subset.to_a)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that yields the correct hash keys unchanged' do
+                  enum = @namespaced.hscan_each('hsh', :match => 'zeta:*', :count => 1000)
+                  expect(enum.to_a).to match_array(hash_matching_subset.to_a)
+                end
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that yields all keys unchanged' do
-                enum = @namespaced.hscan_each('hsh', :count => 1000)
-                expect(enum.to_a).to match_array(hash.to_a)
+            context 'without :match supplied' do
+              context 'when given a block' do
+                it 'should yield all hash keys unchanged' do
+                  results = []
+                  @namespaced.hscan_each('hsh', :count => 1000) { |k| results << k }
+                  expect(results).to match_array(hash.to_a)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that yields all keys unchanged' do
+                  enum = @namespaced.hscan_each('hsh', :count => 1000)
+                  expect(enum.to_a).to match_array(hash.to_a)
+                end
               end
             end
           end
-        end if Redis.new.respond_to?(:hscan_each)
+        end
       end
 
       context 'set scan methods' do
@@ -925,122 +952,130 @@ describe "redis" do
           @redis.sadd('set', 'WRONG')
         end
         let(:set) do
-          %w(zeta:one zeta:two three)
+          %w[zeta:one zeta:two three]
         end
         let(:matching_subset) do
           set.select { |e| e[/\Azeta:/] }
         end
 
-        context '#sscan' do
-          context 'when supplied :match' do
-            it 'should retrieve the matching set members from the proper set' do
-              _, results = @namespaced.sscan('set', 0, :match => 'zeta:*', :count => 1000)
-              expect(results).to match_array(matching_subset)
-            end
-          end
-          context 'without :match supplied' do
-            it 'should retrieve all set members from the proper set' do
-              _, results = @namespaced.sscan('set', 0, :count => 1000)
-              expect(results).to match_array(set)
-            end
-          end
-        end if Redis.new.respond_to?(:sscan)
-
-        context '#sscan_each' do
-          context 'when :match supplied' do
-            context 'when given a block' do
-              it 'should yield the correct hset elements unchanged' do
-                results = []
-                @namespaced.sscan_each('set', :match => 'zeta:*', :count => 1000) { |kv| results << kv}
+        if Redis.new.respond_to?(:sscan)
+          context '#sscan' do
+            context 'when supplied :match' do
+              it 'should retrieve the matching set members from the proper set' do
+                _, results = @namespaced.sscan('set', 0, :match => 'zeta:*', :count => 1000)
                 expect(results).to match_array(matching_subset)
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that yields the correct set elements unchanged' do
-                enum = @namespaced.sscan_each('set', :match => 'zeta:*', :count => 1000)
-                expect(enum.to_a).to match_array(matching_subset)
-              end
-            end
-          end
-          context 'without :match supplied' do
-            context 'when given a block' do
-              it 'should yield all set elements unchanged' do
-                results = []
-                @namespaced.sscan_each('set', :count => 1000){ |k| results << k }
+            context 'without :match supplied' do
+              it 'should retrieve all set members from the proper set' do
+                _, results = @namespaced.sscan('set', 0, :count => 1000)
                 expect(results).to match_array(set)
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that yields all set elements unchanged' do
-                enum = @namespaced.sscan_each('set', :count => 1000)
-                expect(enum.to_a).to match_array(set)
+          end
+        end
+
+        if Redis.new.respond_to?(:sscan_each)
+          context '#sscan_each' do
+            context 'when :match supplied' do
+              context 'when given a block' do
+                it 'should yield the correct hset elements unchanged' do
+                  results = []
+                  @namespaced.sscan_each('set', :match => 'zeta:*', :count => 1000) { |kv| results << kv }
+                  expect(results).to match_array(matching_subset)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that yields the correct set elements unchanged' do
+                  enum = @namespaced.sscan_each('set', :match => 'zeta:*', :count => 1000)
+                  expect(enum.to_a).to match_array(matching_subset)
+                end
+              end
+            end
+            context 'without :match supplied' do
+              context 'when given a block' do
+                it 'should yield all set elements unchanged' do
+                  results = []
+                  @namespaced.sscan_each('set', :count => 1000) { |k| results << k }
+                  expect(results).to match_array(set)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that yields all set elements unchanged' do
+                  enum = @namespaced.sscan_each('set', :count => 1000)
+                  expect(enum.to_a).to match_array(set)
+                end
               end
             end
           end
-        end if Redis.new.respond_to?(:sscan_each)
+        end
       end
 
       context 'zset scan methods' do
         before(:each) do
-          hash.each {|member, score| @namespaced.zadd('zset', score, member)}
+          hash.each { |member, score| @namespaced.zadd('zset', score, member) }
           @redis.zadd('zset', 123.45, 'WRONG')
         end
         let(:hash) do
-          {'zeta:one' => 1, 'zeta:two' => 2, 'three' => 3}
+          { 'zeta:one' => 1, 'zeta:two' => 2, 'three' => 3 }
         end
         let(:hash_matching_subset) do
           # select is not consistent from 1.8.7 -> 1.9.2 :(
-          hash.reject {|k,v| !k[/\Azeta:/] }
+          hash.select { |k, _v| k[/\Azeta:/] }
         end
-        context '#zscan' do
-          context 'when supplied :match' do
-            it 'should retrieve the matching set elements and their scores' do
-              results = []
-              @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000) { |ms| results << ms }
-              expect(results).to match_array(hash_matching_subset.to_a)
-            end
-          end
-          context 'without :match supplied' do
-            it 'should retrieve all set elements and their scores' do
-              results = []
-              @namespaced.zscan_each('zset', :count => 1000) { |ms| results << ms }
-              expect(results).to match_array(hash.to_a)
-            end
-          end
-        end if Redis.new.respond_to?(:zscan)
-
-        context '#zscan_each' do
-          context 'when :match supplied' do
-            context 'when given a block' do
-              it 'should yield the correct set elements and scores unchanged' do
+        if Redis.new.respond_to?(:zscan)
+          context '#zscan' do
+            context 'when supplied :match' do
+              it 'should retrieve the matching set elements and their scores' do
                 results = []
-                @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000) { |ms| results << ms}
+                @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000) { |ms| results << ms }
                 expect(results).to match_array(hash_matching_subset.to_a)
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that yields the correct set elements and scoresunchanged' do
-                enum = @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000)
-                expect(enum.to_a).to match_array(hash_matching_subset.to_a)
-              end
-            end
-          end
-          context 'without :match supplied' do
-            context 'when given a block' do
-              it 'should yield all set elements and scores unchanged' do
+            context 'without :match supplied' do
+              it 'should retrieve all set elements and their scores' do
                 results = []
-                @namespaced.zscan_each('zset', :count => 1000){ |ms| results << ms }
+                @namespaced.zscan_each('zset', :count => 1000) { |ms| results << ms }
                 expect(results).to match_array(hash.to_a)
               end
             end
-            context 'without a block' do
-              it 'should return an Enumerator that yields all set elements and scores unchanged' do
-                enum = @namespaced.zscan_each('zset', :count => 1000)
-                expect(enum.to_a).to match_array(hash.to_a)
+          end
+        end
+
+        if Redis.new.respond_to?(:zscan_each)
+          context '#zscan_each' do
+            context 'when :match supplied' do
+              context 'when given a block' do
+                it 'should yield the correct set elements and scores unchanged' do
+                  results = []
+                  @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000) { |ms| results << ms }
+                  expect(results).to match_array(hash_matching_subset.to_a)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that yields the correct set elements and scoresunchanged' do
+                  enum = @namespaced.zscan_each('zset', :match => 'zeta:*', :count => 1000)
+                  expect(enum.to_a).to match_array(hash_matching_subset.to_a)
+                end
+              end
+            end
+            context 'without :match supplied' do
+              context 'when given a block' do
+                it 'should yield all set elements and scores unchanged' do
+                  results = []
+                  @namespaced.zscan_each('zset', :count => 1000) { |ms| results << ms }
+                  expect(results).to match_array(hash.to_a)
+                end
+              end
+              context 'without a block' do
+                it 'should return an Enumerator that yields all set elements and scores unchanged' do
+                  enum = @namespaced.zscan_each('zset', :count => 1000)
+                  expect(enum.to_a).to match_array(hash.to_a)
+                end
               end
             end
           end
-        end if Redis.new.respond_to?(:zscan_each)
+        end
       end
     end
   end
@@ -1059,7 +1094,7 @@ describe "redis" do
     it 'should namespace pfmerge' do
       5.times do |n|
         @redis.pfadd("ns:pfa", n)
-        @redis.pfadd("ns:pfb", n+5)
+        @redis.pfadd("ns:pfb", n + 5)
       end
 
       @namespaced.pfmerge("pfc", "pfa", "pfb")

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require "#{File.dirname(__FILE__)}/spec_helper"
 
 require 'stringio'
 
@@ -13,7 +13,7 @@ describe Redis::Namespace do
       Redis::Namespace.new(:ns, options.merge(:redis => redis))
     end
 
-    let(:options) { Hash.new }
+    let(:options) { {} }
 
     subject { namespaced }
 
@@ -21,12 +21,12 @@ describe Redis::Namespace do
     its(:warning?) { should be true }
 
     context('with REDIS_NAMESPACE_DEPRECATIONS') do
-      around(:each) {|e| with_env('REDIS_NAMESPACE_DEPRECATIONS'=>'1', &e) }
+      around(:each) { |e| with_env('REDIS_NAMESPACE_DEPRECATIONS'=>'1', &e) }
       its(:deprecations?) { should be true }
     end
 
     context('with REDIS_NAMESPACE_QUIET') do
-      around(:each) {|e| with_env('REDIS_NAMESPACE_QUIET'=>'1', &e) }
+      around(:each) { |e| with_env('REDIS_NAMESPACE_QUIET'=>'1', &e) }
       its(:warning?) { should be false }
     end
 
@@ -39,7 +39,7 @@ describe Redis::Namespace do
 
     # This behaviour will hold true after the 2.x migration
     context('with deprecations enabled') do
-      let(:options) { {:deprecations => true} }
+      let(:options) { { :deprecations => true } }
       its(:deprecations?) { should be true }
 
       context('with an unhandled command') do
@@ -65,7 +65,7 @@ describe Redis::Namespace do
 
     # This behaviour will no longer be available after the 2.x migration
     context('with deprecations disabled') do
-      let(:options) { {:deprecations => false} }
+      let(:options) { { :deprecations => false } }
       its(:deprecations?) { should be false }
 
       context('with an an unhandled command') do
@@ -87,13 +87,13 @@ describe Redis::Namespace do
           warning = stderr.tap(&:rewind).read
 
           expect(warning).to_not be_empty
-          expect(warning).to include %q(Passing 'unhandled' command to redis as is)
-          expect(warning).to include %q(blind passthrough)
+          expect(warning).to include "Passing 'unhandled' command to redis as is"
+          expect(warning).to include 'blind passthrough'
           expect(warning).to include __FILE__
         end
 
         context('and warnings disabled') do
-          let(:options) { super().merge(:warning => false)}
+          let(:options) { super().merge(:warning => false) }
           it 'does not warn' do
             capture_stderr(stderr = StringIO.new) do
               namespaced.unhandled('bar')
@@ -118,8 +118,8 @@ describe Redis::Namespace do
           warning = stderr.tap(&:rewind).read
 
           expect(warning).to_not be_empty
-          expect(warning).to include %q(Passing 'flushdb' command to redis as is)
-          expect(warning).to include %q(administrative)
+          expect(warning).to include "Passing 'flushdb' command to redis as is"
+          expect(warning).to include 'administrative'
           expect(warning).to include __FILE__
         end
       end

@@ -1,0 +1,50 @@
+AllCops:
+  TargetRubyVersion: 2.4
+  NewCops: disable
+  SuggestExtensions: false
+  Exclude:
+    - "coverage/**/*"
+    - "pkg/**/*"
+    - "vendor/**/*"
+
+# This is a small, stable public API; a few methods are intentionally long
+# (the command-namespacing tables and the dispatch method), so we relax the
+# line-count/complexity metrics rather than force awkward extractions.
+Metrics:
+  Enabled: false
+
+# Historically written with a mix of quoting styles; not worth the
+# unrelated-looking diff noise of rewriting every string in the file.
+Style/StringLiterals:
+  Enabled: false
+
+# The COMMANDS tables intentionally use hash-rocket syntax with aligned
+# `=>` for readability; leave both hash-rocket and 1.9-style alone.
+Style/HashSyntax:
+  Enabled: false
+
+Layout/HashAlignment:
+  EnforcedHashRocketStyle: table
+  EnforcedColonStyle: table
+
+Layout/ExtraSpacing:
+  AllowForAlignment: true
+
+Layout/LineLength:
+  Max: 120
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# lib/redis-namespace.rb is the gem's public require entrypoint and must
+# keep matching the gem name (`require 'redis-namespace'`); renaming it
+# would break that public interface.
+Naming/FileName:
+  Exclude:
+    - "lib/redis-namespace.rb"

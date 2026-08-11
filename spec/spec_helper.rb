@@ -1,3 +1,10 @@
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter '/spec/'
+  end
+end
+
 require 'rubygems'
 require 'bundler'
 Bundler.setup(:default, :test)
@@ -8,20 +15,19 @@ require 'rspec/its'
 require 'redis'
 require 'logger'
 
-$TESTING=true
-$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+$TESTING = true # rubocop:disable Style/GlobalVars -- kept for backwards compatibility with anything relying on it
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'redis/namespace'
 
-if Redis.respond_to?(:exists_returns_integer=)
-  Redis.exists_returns_integer = true
-end
+Redis.exists_returns_integer = true if Redis.respond_to?(:exists_returns_integer=)
 
 module Helper
   def capture_stderr(io = nil)
     require 'stringio'
     io ||= StringIO.new
     begin
-      original, $stderr = $stderr, io
+      original = $stderr
+      $stderr = io
       yield
     rescue Redis::CommandError
       # ignore Redis::CommandError for test and
@@ -42,7 +48,8 @@ module Helper
   end
 
   def silent
-    verbose, $VERBOSE = $VERBOSE, false
+    verbose = $VERBOSE
+    $VERBOSE = false
 
     begin
       yield
