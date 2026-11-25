@@ -1,9 +1,6 @@
 source "https://rubygems.org"
 
-case redis_version = ENV.fetch('REDIS_VERSION', 'latest')
-when 'latest'
-  gem 'redis', '~> 4'
-else
+if (redis_version = ENV['REDIS_VERSION'])
   gem 'redis', "~> #{redis_version}"
 end
 
@@ -18,12 +15,6 @@ platforms :rbx do
   gem 'rubysl-timeout'
   gem 'rubysl-zlib'
   gem 'rubysl-stringio'
-end
-
-platforms :ruby do
-  install_if -> { RUBY_VERSION[0] == '4' } do
-    gem 'logger'
-  end
 end
 
 gemspec
