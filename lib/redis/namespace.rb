@@ -471,6 +471,7 @@ class Redis
         args.unshift(first) if first
       when :exclude_last
         last = args.pop unless args.length == 1
+        last = ruby2_keywords_hash(last) if last.is_a?(Hash)
         args = add_namespace(args)
         args.push(last) if last
       when :exclude_options
