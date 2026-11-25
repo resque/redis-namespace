@@ -1099,6 +1099,95 @@ describe "redis" do
     end
   end
 
+  describe "argument namespacing" do
+    def sent_to_redis(command, *args)
+      kwargs = args.last.is_a?(Hash) ? args.pop : {}
+      sent = nil
+      allow(@redis).to receive(command) { |*a, **kw| sent = [a, kw]; nil }
+      kwargs.empty? ? @namespaced.public_send(command, *args) : @namespaced.public_send(command, *args, **kwargs)
+      sent
+    end
+
+    it "namespaces the key of single-key commands" do
+      %i[
+        arcount ardel ardelrange arget argetrange argrep arinfo arinsert arlastitems arlen armget armset arnext
+        arop arring arscan arseek arset bitrangeintarray bless_clear bless_get bless_set delex digest increx
+        geoadd geodist geohash geopos georadius georadiusbymember geosearch hexpire hexpireat hexpiretime
+        hgetdel hgetex hpersist hpexpire hpexpireat hpexpiretime hpttl hrandfield hsetex httl json_arrappend
+        json_arrindex json_arrinsert json_arrlen json_arrpop json_arrtrim json_clear json_debug_memory json_del
+        json_forget json_get json_merge json_numincrby json_objkeys json_objlen json_set json_strappend
+        json_strlen json_toggle json_type migrate saddex sexpire sexpireat sexpiretime spersist spexpire
+        spexpireat spexpiretime spttl spublish sttl vadd vcard vdim vemb vgetattr vinfo vismember vlinks
+        vrandmember vrange vrem vsetattr vsim xack xackdel xadd xautoclaim xcfgset xclaim xdel xdelex xlen
+        xnack xpending xrange xrevrange xsetid xtrim zlexcount zmscore zrandmember
+      ].each do |command|
+        expect(sent_to_redis(command, "key", "arg")).to eq([["ns:key", "arg"], {}]), command.to_s
+      end
+    end
+
+    {
+      [:hgetex, "h", "f", { :ex => 10 }]                          => [["ns:h", "f"], { :ex => 10 }],
+      [:copy, "a", "b", { :replace => true }]                    => [["ns:a", "ns:b"], { :replace => true }],
+      [:lcs, "a", "b", { :len => true }]                         => [["ns:a", "ns:b"], { :len => true }],
+      [:geosearchstore, "dst", "src", { :frommember => "m" }]    => [["ns:dst", "ns:src"], { :frommember => "m" }],
+      [:sintercard, "a", "b", { :limit => 1 }]                   => [["ns:a", "ns:b"], { :limit => 1 }],
+      [:sdiffcard, "a", "b"]                                     => [["ns:a", "ns:b"], {}],
+      [:sunioncard, "a", "b"]                                    => [["ns:a", "ns:b"], {}],
+      [:zdiff, "a", "b", { :with_scores => true }]               => [["ns:a", "ns:b"], { :with_scores => true }],
+      [:zdiffstore, "dst", "a", "b"]                             => [["ns:dst", "ns:a", "ns:b"], {}],
+      [:zinter, "a", "b", { :aggregate => "max" }]               => [["ns:a", "ns:b"], { :aggregate => "max" }],
+      [:zintercard, "a", "b"]                                    => [["ns:a", "ns:b"], {}],
+      [:zunion, "a", "b"]                                        => [["ns:a", "ns:b"], {}],
+      [:zmove, "a", "b", { :count => 2 }]                        => [["ns:a", "ns:b"], { :count => 2 }],
+      [:bzmove, "a", "b", { :timeout => 1 }]                     => [["ns:a", "ns:b"], { :timeout => 1 }],
+      [:lmpop, "a", "b", { :modifier => "RIGHT" }]               => [["ns:a", "ns:b"], { :modifier => "RIGHT" }],
+      [:zmpop, "a", "b"]                                         => [["ns:a", "ns:b"], {}],
+      [:blmpop, 1, "a", "b", { :count => 2 }]                    => [[1, "ns:a", "ns:b"], { :count => 2 }],
+      [:bzmpop, 1, "a", "b"]                                     => [[1, "ns:a", "ns:b"], {}],
+      [:subscribe_with_timeout, 1, "a", "b"]                     => [[1, "ns:a", "ns:b"], {}],
+      [:psubscribe_with_timeout, 1, "a*"]                        => [[1, "ns:a*"], {}],
+      [:ssubscribe_with_timeout, 1, "a"]                         => [[1, "ns:a"], {}],
+      [:ssubscribe, "a", "b"]                                    => [["ns:a", "ns:b"], {}],
+      [:sunsubscribe, "a", "b"]                                  => [["ns:a", "ns:b"], {}],
+      [:blmove, "a", "b", "LEFT", "RIGHT", { :timeout => 1 }]    => [["ns:a", "ns:b", "LEFT", "RIGHT"], { :timeout => 1 }],
+      [:lmovem, "a", "b", "LEFT", "RIGHT", { :count => 2 }]      => [["ns:a", "ns:b", "LEFT", "RIGHT"], { :count => 2 }],
+      [:blmovem, "a", "b", "LEFT", "RIGHT"]                      => [["ns:a", "ns:b", "LEFT", "RIGHT"], {}],
+      [:zmovemember, "a", "b", ["m"], { :nx => true }]           => [["ns:a", "ns:b", ["m"]], { :nx => true }],
+      [:zrangestore, "dst", "src", 0, -1]                        => [["ns:dst", "ns:src", 0, -1], {}],
+      [:sort_ro, "k", { :by => "w_*", :get => ["o_*", "#"] }]    => [["ns:k"], { :by => "ns:w_*", :get => ["ns:o_*", "#"] }],
+      [:fcall, "fn", ["a"], ["x"]]                               => [["fn", ["ns:a"], ["x"]], {}],
+      [:fcall_ro, "fn", ["a"], ["x"]]                            => [["fn", ["ns:a"], ["x"]], {}],
+      [:xgroup, :create, "s", "g", "$", { :mkstream => true }]   => [[:create, "ns:s", "g", "$"], { :mkstream => true }],
+      [:xinfo, :stream, "s"]                                     => [[:stream, "ns:s"], {}],
+      [:xread, ["a", "b"], ["0", "0"]]                           => [[["ns:a", "ns:b"], ["0", "0"]], {}],
+      [:xreadgroup, "g", "c", ["a", "b"], [">", ">"], { :count => 1 }] => [["g", "c", ["ns:a", "ns:b"], [">", ">"]], { :count => 1 }],
+      [:connected?]                                              => [[], {}],
+      [:subscribed?]                                             => [[], {}],
+      [:id]                                                      => [[], {}],
+    }.each do |(command, *args), expected|
+      it "namespaces #{command}" do
+        expect(sent_to_redis(command, *args)).to eq(expected)
+      end
+    end
+
+    it "removes the namespace from stream keys in xread and xreadgroup replies" do
+      @namespaced.xadd("s1", { "f" => "v" }, :id => "1-0")
+      @namespaced.xgroup(:create, "s1", "g", "0")
+
+      expect(@namespaced.xread(["s1"], ["0"]).keys).to eq(["s1"])
+      expect(@namespaced.xreadgroup("g", "c", ["s1"], [">"]).keys).to eq(["s1"])
+      expect(@redis.keys("*s1")).to eq(["ns:s1"])
+    end
+
+    it "removes the namespace from the popped key in lmpop and blmpop replies" do
+      skip "redis-rb #{Redis::VERSION} has no lmpop" unless @redis.respond_to?(:lmpop)
+
+      @namespaced.rpush("b", %w[1 2])
+      expect(@namespaced.lmpop("a", "b")).to eq(["b", ["1"]])
+      expect(@namespaced.blmpop(1, "a", "b", :modifier => "RIGHT")).to eq(["b", ["2"]])
+    end
+  end
+
   describe :clear do
     it "warns with helpful output" do
       expect { @namespaced.clear }.to output(/can run for a very long time/).to_stderr
