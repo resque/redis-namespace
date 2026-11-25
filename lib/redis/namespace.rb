@@ -17,11 +17,23 @@ class Redis
     #   :first
     #     Add the namespace to the first argument passed, e.g.
     #       GET key => GET namespace:key
+    #   :first_two
+    #     Add the namespace to the first two arguments passed, e.g.
+    #       LMOVE src dst LEFT RIGHT => LMOVE namespace:src namespace:dst LEFT RIGHT
+    #   :second
+    #     Add the namespace to the second argument passed, e.g.
+    #       XINFO STREAM key => XINFO STREAM namespace:key
+    #   :third
+    #     Add the namespace to the third argument passed, e.g.
+    #       XREADGROUP group consumer key id =>
+    #       XREADGROUP group consumer namespace:key id
     #   :all
     #     Add the namespace to all arguments passed, e.g.
     #       MGET key1 key2 => MGET namespace:key1 namespace:key2
     #   :exclude_first
-    #     Add the namespace to all arguments but the first, e.g.
+    #     Add the namespace to all arguments but the first, and any trailing
+    #     hash of options, e.g.
+    #       BLMPOP timeout key1 key2 => BLMPOP timeout namespace:key1 namespace:key2
     #   :exclude_last
     #     Add the namespace to all arguments but the last, e.g.
     #       BLPOP key1 key2 timeout =>
@@ -55,19 +67,49 @@ class Redis
     #       key1 key2 => namespace:key1 namespace:key2
     NAMESPACED_COMMANDS = {
       "append"           => [ :first ],
+      "arcount"          => [ :first ],
+      "ardel"            => [ :first ],
+      "ardelrange"       => [ :first ],
+      "arget"            => [ :first ],
+      "argetrange"       => [ :first ],
+      "argrep"           => [ :first ],
+      "arinfo"           => [ :first ],
+      "arinsert"         => [ :first ],
+      "arlastitems"      => [ :first ],
+      "arlen"            => [ :first ],
+      "armget"           => [ :first ],
+      "armset"           => [ :first ],
+      "arnext"           => [ :first ],
+      "arop"             => [ :first ],
+      "arring"           => [ :first ],
+      "arscan"           => [ :first ],
+      "arseek"           => [ :first ],
+      "arset"            => [ :first ],
       "bitcount"         => [ :first ],
       "bitfield"         => [ :first ],
       "bitop"            => [ :exclude_first ],
       "bitpos"           => [ :first ],
+      "bitrangeintarray" => [ :first ],
+      "bless_clear"      => [ :first ],
+      "bless_get"        => [ :first ],
+      "bless_set"        => [ :first ],
+      "blmove"           => [ :first_two ],
+      "blmovem"          => [ :first_two ],
+      "blmpop"           => [ :exclude_first, :first ],
       "blpop"            => [ :exclude_last, :first ],
       "brpop"            => [ :exclude_last, :first ],
-      "brpoplpush"       => [ :exclude_last ],
+      "brpoplpush"       => [ :first_two ],
+      "bzmove"           => [ :exclude_options ],
+      "bzmpop"           => [ :exclude_first, :first ],
       "bzpopmin"         => [ :first ],
       "bzpopmax"         => [ :first ],
+      "copy"             => [ :exclude_options ],
       "debug"            => [ :exclude_first ],
       "decr"             => [ :first ],
       "decrby"           => [ :first ],
       "del"              => [ :all   ],
+      "delex"            => [ :first ],
+      "digest"           => [ :first ],
       "dump"             => [ :first ],
       "exists"           => [ :all ],
       "exists?"          => [ :all ],
@@ -76,13 +118,35 @@ class Redis
       "expiretime"       => [ :first ],
       "eval"             => [ :eval_style ],
       "evalsha"          => [ :eval_style ],
+      "fcall"            => [ :eval_style ],
+      "fcall_ro"         => [ :eval_style ],
+      "geoadd"           => [ :first ],
+      "geodist"          => [ :first ],
+      "geohash"          => [ :first ],
+      "geopos"           => [ :first ],
+      "georadius"        => [ :first ],
+      "georadiusbymember" => [ :first ],
+      "geosearch"        => [ :first ],
+      "geosearchstore"   => [ :exclude_options ],
       "get"              => [ :first ],
       "getdel"           => [ :first ],
       "getex"            => [ :first ],
       "getbit"           => [ :first ],
       "getrange"         => [ :first ],
       "getset"           => [ :first ],
+      "hexpire"          => [ :first ],
+      "hexpireat"        => [ :first ],
+      "hexpiretime"      => [ :first ],
+      "hgetdel"          => [ :first ],
+      "hgetex"           => [ :first ],
+      "hpersist"         => [ :first ],
+      "hpexpire"         => [ :first ],
+      "hpexpireat"       => [ :first ],
+      "hpexpiretime"     => [ :first ],
+      "hpttl"            => [ :first ],
+      "hrandfield"       => [ :first ],
       "hset"             => [ :first ],
+      "hsetex"           => [ :first ],
       "hsetnx"           => [ :first ],
       "hget"             => [ :first ],
       "hincrby"          => [ :first ],
@@ -95,16 +159,41 @@ class Redis
       "hkeys"            => [ :first ],
       "hscan"            => [ :first ],
       "hscan_each"       => [ :first ],
+      "httl"             => [ :first ],
       "hvals"            => [ :first ],
       "hgetall"          => [ :first ],
       "incr"             => [ :first ],
       "incrby"           => [ :first ],
       "incrbyfloat"      => [ :first ],
+      "increx"           => [ :first ],
+      "json_arrappend"   => [ :first ],
+      "json_arrindex"    => [ :first ],
+      "json_arrinsert"   => [ :first ],
+      "json_arrlen"      => [ :first ],
+      "json_arrpop"      => [ :first ],
+      "json_arrtrim"     => [ :first ],
+      "json_clear"       => [ :first ],
+      "json_debug_memory" => [ :first ],
+      "json_del"         => [ :first ],
+      "json_forget"      => [ :first ],
+      "json_get"         => [ :first ],
+      "json_merge"       => [ :first ],
+      "json_numincrby"   => [ :first ],
+      "json_objkeys"     => [ :first ],
+      "json_objlen"      => [ :first ],
+      "json_set"         => [ :first ],
+      "json_strappend"   => [ :first ],
+      "json_strlen"      => [ :first ],
+      "json_toggle"      => [ :first ],
+      "json_type"        => [ :first ],
       "keys"             => [ :first, :all ],
+      "lcs"              => [ :exclude_options ],
       "lindex"           => [ :first ],
       "linsert"          => [ :first ],
       "llen"             => [ :first ],
       "lmove"            => [ :first_two ],
+      "lmovem"           => [ :first_two ],
+      "lmpop"            => [ :exclude_options, :first ],
       "lpop"             => [ :first ],
       "lpos"             => [ :first ],
       "lpush"            => [ :first ],
@@ -119,6 +208,7 @@ class Redis
       "mapped_mset"      => [ :all ],
       "mapped_msetnx"    => [ :all ],
       "mget"             => [ :all ],
+      "migrate"          => [ :first ],
       "monitor"          => [ :monitor ],
       "move"             => [ :first ],
       "mset"             => [ :alternate ],
@@ -133,6 +223,7 @@ class Redis
       "pfmerge"          => [ :all ],
       "psetex"           => [ :first ],
       "psubscribe"       => [ :all ],
+      "psubscribe_with_timeout" => [ :exclude_first ],
       "pttl"             => [ :first ],
       "publish"          => [ :first ],
       "punsubscribe"     => [ :all ],
@@ -145,47 +236,109 @@ class Redis
       "rpushx"           => [ :first ],
       "sadd"             => [ :first ],
       "sadd?"            => [ :first ],
+      "saddex"           => [ :first ],
       "scard"            => [ :first ],
       "scan"             => [ :scan_style, :second ],
       "scan_each"        => [ :scan_style, :all ],
       "sdiff"            => [ :all ],
+      "sdiffcard"        => [ :exclude_options ],
       "sdiffstore"       => [ :all ],
       "set"              => [ :first ],
       "setbit"           => [ :first ],
       "setex"            => [ :first ],
       "setnx"            => [ :first ],
       "setrange"         => [ :first ],
+      "sexpire"          => [ :first ],
+      "sexpireat"        => [ :first ],
+      "sexpiretime"      => [ :first ],
       "sinter"           => [ :all ],
+      "sintercard"       => [ :exclude_options ],
       "sinterstore"      => [ :all ],
       "sismember"        => [ :first ],
       "smembers"         => [ :first ],
       "smismember"       => [ :first ],
       "smove"            => [ :exclude_last ],
       "sort"             => [ :sort  ],
+      "sort_ro"          => [ :sort ],
+      "spersist"         => [ :first ],
+      "spexpire"         => [ :first ],
+      "spexpireat"       => [ :first ],
+      "spexpiretime"     => [ :first ],
       "spop"             => [ :first ],
+      "spttl"            => [ :first ],
+      "spublish"         => [ :first ],
       "srandmember"      => [ :first ],
       "srem"             => [ :first ],
       "srem?"            => [ :first ],
       "sscan"            => [ :first ],
       "sscan_each"       => [ :first ],
+      "ssubscribe"       => [ :all ],
+      "ssubscribe_with_timeout" => [ :exclude_first ],
       "strlen"           => [ :first ],
+      "sttl"             => [ :first ],
       "subscribe"        => [ :all ],
+      "subscribe_with_timeout" => [ :exclude_first ],
       "sunion"           => [ :all ],
+      "sunioncard"       => [ :exclude_options ],
       "sunionstore"      => [ :all ],
+      "sunsubscribe"     => [ :all ],
       "ttl"              => [ :first ],
       "type"             => [ :first ],
       "unlink"           => [ :all   ],
       "unsubscribe"      => [ :all ],
+      "vadd"             => [ :first ],
+      "vcard"            => [ :first ],
+      "vdim"             => [ :first ],
+      "vemb"             => [ :first ],
+      "vgetattr"         => [ :first ],
+      "vinfo"            => [ :first ],
+      "vismember"        => [ :first ],
+      "vlinks"           => [ :first ],
+      "vrandmember"      => [ :first ],
+      "vrange"           => [ :first ],
+      "vrem"             => [ :first ],
+      "vsetattr"         => [ :first ],
+      "vsim"             => [ :first ],
+      "xack"             => [ :first ],
+      "xackdel"          => [ :first ],
+      "xadd"             => [ :first ],
+      "xautoclaim"       => [ :first ],
+      "xcfgset"          => [ :first ],
+      "xclaim"           => [ :first ],
+      "xdel"             => [ :first ],
+      "xdelex"           => [ :first ],
+      "xgroup"           => [ :second ],
+      "xinfo"            => [ :second ],
+      "xlen"             => [ :first ],
+      "xnack"            => [ :first ],
+      "xpending"         => [ :first ],
+      "xrange"           => [ :first ],
+      "xread"            => [ :first, :all ],
+      "xreadgroup"       => [ :third, :all ],
+      "xrevrange"        => [ :first ],
+      "xsetid"           => [ :first ],
+      "xtrim"            => [ :first ],
       "zadd"             => [ :first ],
       "zcard"            => [ :first ],
       "zcount"           => [ :first ],
+      "zdiff"            => [ :exclude_options ],
+      "zdiffstore"       => [ :exclude_options ],
       "zincrby"          => [ :first ],
+      "zinter"           => [ :exclude_options ],
+      "zintercard"       => [ :exclude_options ],
       "zinterstore"      => [ :exclude_options ],
+      "zlexcount"        => [ :first ],
+      "zmove"            => [ :exclude_options ],
+      "zmovemember"      => [ :first_two ],
+      "zmpop"            => [ :exclude_options, :first ],
+      "zmscore"          => [ :first ],
       "zpopmin"          => [ :first ],
       "zpopmax"          => [ :first ],
+      "zrandmember"      => [ :first ],
       "zrange"           => [ :first ],
       "zrangebyscore"    => [ :first ],
       "zrangebylex"      => [ :first ],
+      "zrangestore"      => [ :first_two ],
       "zrank"            => [ :first ],
       "zrem"             => [ :first ],
       "zremrangebyrank"  => [ :first ],
@@ -198,6 +351,7 @@ class Redis
       "zscan"            => [ :first ],
       "zscan_each"       => [ :first ],
       "zscore"           => [ :first ],
+      "zunion"           => [ :exclude_options ],
       "zunionstore"      => [ :exclude_options ]
     }
     TRANSACTION_COMMANDS = {
@@ -209,11 +363,15 @@ class Redis
     }
     HELPER_COMMANDS = {
       "auth"             => [],
+      "connected?"       => [],
       "disconnect!"      => [],
       "close"            => [],
       "echo"             => [],
+      "id"               => [],
       "ping"             => [],
+      "subscribed?"      => [],
       "time"             => [],
+      "without_reconnect" => []
     }
     ADMINISTRATIVE_COMMANDS = {
       "bgrewriteaof"     => [],
@@ -463,12 +621,20 @@ class Redis
         args[0] = add_namespace(args[0]) if args[0]
         args[1] = add_namespace(args[1]) if args[1]
         args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
+      when :second
+        args[1] = add_namespace(args[1]) if args[1]
+        args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
+      when :third
+        args[2] = add_namespace(args[2]) if args[2]
+        args[-1] = ruby2_keywords_hash(args[-1]) if args[-1].is_a?(Hash)
       when :all
         args = add_namespace(args)
       when :exclude_first
         first = args.shift
+        options = ruby2_keywords_hash(args.pop) if args.last.is_a?(Hash)
         args = add_namespace(args)
         args.unshift(first) if first
+        args.push(options) if options
       when :exclude_last
         last = args.pop unless args.length == 1
         args = add_namespace(args)
@@ -618,7 +784,7 @@ class Redis
       when Array
         key.map {|k| rem_namespace k}
       when Hash
-        Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
+        Hash[key.map {|k, v| [ rem_namespace(k), v ]}]
       when Enumerator
         create_enumerator do |yielder|
           key.each { |k| yielder.yield rem_namespace(k) }
