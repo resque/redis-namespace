@@ -65,10 +65,10 @@ describe "redis" do
     @namespaced.rpush "foo", "string"
     @namespaced.rpush "foo", "ns:string"
     @namespaced.rpush "foo", "string_no_timeout"
-    expect(@namespaced.blpop("foo", 1)).to eq(["foo", "string"])
-    expect(@namespaced.blpop("foo", 1)).to eq(["foo", "ns:string"])
+    expect(@namespaced.blpop("foo", timeout: 1)).to eq(["foo", "string"])
+    expect(@namespaced.blpop("foo", timeout: 1)).to eq(["foo", "ns:string"])
     expect(@namespaced.blpop("foo")).to eq(["foo", "string_no_timeout"])
-    expect(@namespaced.blpop("foo", 1)).to eq(nil)
+    expect(@namespaced.blpop("foo", timeout: 1)).to eq(nil)
   end
 
   it "should be able to use a namespace with del" do
@@ -446,42 +446,44 @@ describe "redis" do
     @namespaced = memo
   end
 
-  it "should pass through multi commands without block" do
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+  if Gem::Version.new(Redis::VERSION) < Gem::Version.new("5")
+    it "should pass through multi commands without block" do
+      @namespaced.mapped_hmset "foo", {"key" => "value"}
 
-    @namespaced.multi
-    @namespaced.del "foo"
-    @namespaced.mapped_hmset "foo", {"key1" => "value1"}
-    @namespaced.exec
+      @namespaced.multi
+      @namespaced.del "foo"
+      @namespaced.mapped_hmset "foo", {"key1" => "value1"}
+      @namespaced.exec
 
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
-  end
+      expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+    end
 
-  it "should utilize connection_pool while passing through multi commands without block" do
-    memo = @namespaced
-    connection_pool = ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 }
-    @namespaced = Redis::Namespace.new(:ns, redis: connection_pool)
+    it "should utilize connection_pool while passing through multi commands without block" do
+      memo = @namespaced
+      connection_pool = ConnectionPool.new(size: 2, timeout: 2) { Redis.new db: 15 }
+      @namespaced = Redis::Namespace.new(:ns, redis: connection_pool)
 
-    expect(connection_pool).to receive(:with).and_call_original do |arg|
-      expect(arg).to be(an_instance_of(Redis))
-    end.at_least(:once)
+      expect(connection_pool).to receive(:with).and_call_original do |arg|
+        expect(arg).to be(an_instance_of(Redis))
+      end.at_least(:once)
 
-    @namespaced.mapped_hmset "foo", {"key" => "value"}
+      @namespaced.mapped_hmset "foo", {"key" => "value"}
 
-    @namespaced.multi
-    @namespaced.del "foo"
-    @namespaced.mapped_hmset "foo", {"key1" => "value1"}
-    @namespaced.exec
+      @namespaced.multi
+      @namespaced.del "foo"
+      @namespaced.mapped_hmset "foo", {"key1" => "value1"}
+      @namespaced.exec
 
-    expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
-    expect(@redis.get("foo")).to eq("bar")
+      expect(@namespaced.hgetall("foo")).to eq({"key1" => "value1"})
+      expect(@redis.get("foo")).to eq("bar")
 
-    @namespaced = memo
+      @namespaced = memo
+    end
   end
 
   it 'should return futures without attempting to remove namespaces' do
-    @namespaced.multi do
-      @future = @namespaced.keys('*')
+    @namespaced.multi do |r|
+      @future = r.keys('*')
     end
     expect(@future.class).to be(Redis::Future)
   end
@@ -532,7 +534,7 @@ describe "redis" do
     thread = Thread.new do
       mon.synchronize do
         entered_cond.wait_until { entered }
-        @namespaced.multi
+        @namespaced.multi { }
       end
     end
 
@@ -664,7 +666,7 @@ describe "redis" do
           expect(@redis.get("ns:foo&bar")).to eq "\x60"
           expect(@redis.get("ns:foo|bar")).to eq "\x63"
           expect(@redis.get("ns:foo^bar")).to eq "\x03"
-          expect(@redis.get("ns:~foo")).to eq "\x9E"
+          expect(@redis.get("ns:~foo").b).to eq "\x9E".b
         end
       end
 

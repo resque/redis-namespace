@@ -6,7 +6,6 @@ Bundler.require(:default, :test)
 require 'rspec'
 require 'rspec/its'
 require 'redis'
-require 'logger'
 
 $TESTING=true
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
