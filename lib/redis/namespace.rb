@@ -98,7 +98,7 @@ class Redis
       "blmpop"           => [ :exclude_first, :first ],
       "blpop"            => [ :exclude_last, :first ],
       "brpop"            => [ :exclude_last, :first ],
-      "brpoplpush"       => [ :exclude_last ],
+      "brpoplpush"       => [ :first_two ],
       "bzmove"           => [ :exclude_options ],
       "bzmpop"           => [ :exclude_first, :first ],
       "bzpopmin"         => [ :first ],

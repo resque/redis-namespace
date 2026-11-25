@@ -1149,6 +1149,8 @@ describe "redis" do
       [:ssubscribe_with_timeout, 1, "a"]                         => [[1, "ns:a"], {}],
       [:ssubscribe, "a", "b"]                                    => [["ns:a", "ns:b"], {}],
       [:sunsubscribe, "a", "b"]                                  => [["ns:a", "ns:b"], {}],
+      [:brpoplpush, "a", "b"]                                    => [["ns:a", "ns:b"], {}],
+      [:brpoplpush, "a", "b", { :timeout => 1 }]                 => [["ns:a", "ns:b"], { :timeout => 1 }],
       [:blmove, "a", "b", "LEFT", "RIGHT", { :timeout => 1 }]    => [["ns:a", "ns:b", "LEFT", "RIGHT"], { :timeout => 1 }],
       [:lmovem, "a", "b", "LEFT", "RIGHT", { :count => 2 }]      => [["ns:a", "ns:b", "LEFT", "RIGHT"], { :count => 2 }],
       [:blmovem, "a", "b", "LEFT", "RIGHT"]                      => [["ns:a", "ns:b", "LEFT", "RIGHT"], {}],
